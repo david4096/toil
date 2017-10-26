@@ -80,6 +80,7 @@ class JobLikeObject(object):
         self._disk = self._parseResource('disk', disk)
         self._preemptable = preemptable
         self._config = None
+        self._tempDir = None
 
     @property
     def disk(self):
@@ -138,6 +139,18 @@ class JobLikeObject(object):
                 'cores': getattr(self, 'cores', None),
                 'disk': getattr(self, 'disk', None),
                 'preemptable': getattr(self, 'preemptable', None)}
+
+    @property
+    def tempDir(self):
+        """
+        Shortcut to calling `job.fileStore.getLocalTempDir`. Temp dir is created on first call
+        and will be returned for first and future calls
+        :return: Path to tempDir. See `job.fileStore.getLocalTempDir`
+        :rtype: str
+        """
+        if self._tempDir is None:
+            self._tempDir = self.fileStore.getLocalTempDir()
+        return self._tempDir
 
     @staticmethod
     def _parseResource(name, value):
