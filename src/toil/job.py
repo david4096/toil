@@ -152,6 +152,12 @@ class JobLikeObject(object):
             self._tempDir = self.fileStore.getLocalTempDir()
         return self._tempDir
 
+    def log(self, text, level=logging.INFO):
+        """
+        clone of `fileStore.logToMaster` for convenience
+        """
+        self.fileStore.logToMaster(text, level)
+
     @staticmethod
     def _parseResource(name, value):
         """
