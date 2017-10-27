@@ -89,8 +89,7 @@ def binPacking(jobShapes, nodeShapes):
     """
     Use a first fit decreasing (FFD) bin packing like algorithm to calculate an approximate
     minimum number of nodes that will fit the given list of jobs.
-    :param Shape nodeShape: The properties of an atomic node allocation, in terms of wall-time,
-           memory, cores and local disk.
+    :param nodeShapes:
     :param list[Shape] jobShapes: A list of shapes, each representing a job.
     Let a *node reservation* be an interval of time that a node is reserved for, it is defined by
     an integer number of node-allocations.
@@ -198,7 +197,7 @@ def binPacking(jobShapes, nodeShapes):
 
                             # If the job would fit, but is longer than the total node allocation
                             # extend the node allocation
-                            elif endingReservation.nReservation == None and startingReservation == nodeReservation:
+                            elif endingReservation.nReservation is None and startingReservation == nodeReservation:
                                 # Extend the node reservation to accommodate jS
                                 endingReservation.nReservation = NodeReservation(nodeShape)
                         else: # Does not fit, reset

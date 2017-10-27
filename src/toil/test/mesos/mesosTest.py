@@ -58,7 +58,8 @@ class MesosTest(ToilTest, MesosTestSupport):
         shutil.rmtree(self.tempDir)
         super(MesosTest, self).tearDown()
 
-    def test_hello_world(self):
+    @staticmethod
+    def test_hello_world():
         system([sys.executable,
                 '-m', helloWorld.__name__,
                 'file:./toilTest',
@@ -66,5 +67,6 @@ class MesosTest(ToilTest, MesosTestSupport):
                 '--mesosMaster', 'localhost:5050',
                 '--logLevel', getLogLevelString()])
 
-    def test_stress_good(self):
+    @staticmethod
+    def test_stress_good():
         stressMain(numJobs=2)

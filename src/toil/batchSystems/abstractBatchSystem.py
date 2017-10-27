@@ -297,7 +297,8 @@ class BatchSystemSupport(AbstractBatchSystem):
         """
         raise NotImplementedError()
 
-    def _getResultsFileName(self, toilPath):
+    @staticmethod
+    def _getResultsFileName(toilPath):
         """
         Get a path for the batch systems to store results. GridEngine, slurm,
         and LSF currently use this and only work if locator is file.
@@ -400,8 +401,7 @@ class AbstractScalableBatchSystem(AbstractBatchSystem):
         assigned new jobs. Call the method again passing None as the filter to disable the filtering
         after node termination is done.
 
-        :param method: This will be used as a filter on nodes considered when assigning new jobs.
-            After this context manager exits the filter should be removed
+        :param filter:
         :rtype: None
         """
         raise NotImplementedError()
@@ -414,7 +414,7 @@ class AbstractScalableBatchSystem(AbstractBatchSystem):
         jobs are still running. This allows the node to be terminated
         after the current jobs have finished.
 
-        :param str: IP address of node to ignore.
+        :param nodeAddress:
         :rtype: None
         """
         raise NotImplementedError()

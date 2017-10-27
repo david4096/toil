@@ -221,7 +221,7 @@ class TorqueBatchSystem(AbstractGridEngineBatchSystem):
             fh.write("cd $PBS_O_WORKDIR\n\n")
             fh.write(command + "\n")
 
-            fh.close
+            fh.close()
             
             return tmpFile
 

@@ -238,7 +238,7 @@ def main(argv=None):
         #Cleanup from any earlier invocation of the jobGraph
         ##########################################
         
-        if jobGraph.command == None:
+        if jobGraph.command is None:
             # Cleanup jobs already finished
             f = lambda jobs : [x for x in [[y for y in x if jobStore.exists(y.jobStoreID)] for x in jobs] if len(x) > 0]
             jobGraph.stack = f(jobGraph.stack)
@@ -248,7 +248,7 @@ def main(argv=None):
         #This cleans the old log file which may 
         #have been left if the job is being retried after a job failure.
         oldLogFile = jobGraph.logJobStoreFileID
-        if oldLogFile != None:
+        if oldLogFile is not None:
             jobGraph.logJobStoreFileID = None
             jobStore.update(jobGraph) #Update first, before deleting any files
             jobStore.deleteFile(oldLogFile)
@@ -258,7 +258,7 @@ def main(argv=None):
         ##########################################
 
         # The job is a checkpoint, and is being restarted after previously completing
-        if jobGraph.checkpoint != None:
+        if jobGraph.checkpoint is not None:
             logger.debug("Job is a checkpoint")
             # If the checkpoint still has extant jobs in its
             # (flattened) stack and services, its subtree didn't
@@ -332,9 +332,9 @@ def main(argv=None):
             ##########################################
             
             #If no more jobs to run or services not finished, quit
-            if len(jobGraph.stack) == 0 or len(jobGraph.services) > 0 or jobGraph.checkpoint != None:
+            if len(jobGraph.stack) == 0 or len(jobGraph.services) > 0 or jobGraph.checkpoint is not None:
                 logger.debug("Stopping running chain of jobs: length of stack: %s, services: %s, checkpoint: %s",
-                             len(jobGraph.stack), len(jobGraph.services), jobGraph.checkpoint != None)
+                             len(jobGraph.stack), len(jobGraph.services), jobGraph.checkpoint is not None)
                 break
             
             #Get the next set of jobs to run
@@ -536,6 +536,6 @@ def main(argv=None):
         shutil.rmtree(localWorkerTempDir)
     
     #This must happen after the log file is done with, else there is no place to put the log
-    if (not workerFailed) and jobGraph.command == None and len(jobGraph.stack) == 0 and len(jobGraph.services) == 0:
+    if (not workerFailed) and jobGraph.command is None and len(jobGraph.stack) == 0 and len(jobGraph.services) == 0:
         # We can now safely get rid of the jobGraph
         jobStore.delete(jobGraph.jobStoreID)

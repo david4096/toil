@@ -123,8 +123,8 @@ class JobGraph(JobNode):
         """
         assert self.checkpoint is not None
         successorsDeleted = []
-        if len(self.stack) > 0 or len(self.services) > 0 or self.command != None:
-            if self.command != None:
+        if len(self.stack) > 0 or len(self.services) > 0 or self.command is not None:
+            if self.command is not None:
                 assert self.command == self.checkpoint
                 logger.debug("Checkpoint job already has command set to run")
             else:

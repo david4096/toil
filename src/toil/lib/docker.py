@@ -217,6 +217,10 @@ def apiDockerCall(job,
                    working_dir=working_dir,
                    parameters=parameters)
 
+    :param dockerParameters:
+    :param volumes:
+    :param containerName:
+    :param auto_remove:
     :param toil.Job.job job: The Job instance for the calling function.
     :param str image: Name of the Docker image to be used.
                      (e.g. 'quay.io/ucsc_cgl/samtools:latest')
@@ -234,7 +238,6 @@ def apiDockerCall(job,
            STOP (1) Sends SIGTERM, then SIGKILL if necessary to the container.
            RM (2) Immediately send SIGKILL to the container. This is the default
            behavior if defer is set to None.
-    :param str name: The name/ID of the container.
     :param str entrypoint: Prepends commands sent to the container.  See:
                       https://docker-py.readthedocs.io/en/stable/containers.html
     :param bool detach: Run the container in detached mode. (equivalent to '-d')
@@ -360,6 +363,7 @@ def dockerKill(container_name, client, gentleKill=False):
     """
     Immediately kills a container.  Equivalent to "docker kill":
     https://docs.docker.com/engine/reference/commandline/kill/
+    :param gentleKill:
     :param container_name: Name of the container being killed.
     :param client: The docker API client object to call.
     """

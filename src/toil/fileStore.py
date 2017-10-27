@@ -63,6 +63,10 @@ class DeferredFunction(namedtuple('DeferredFunction', 'function args kwargs name
     >>> df.invoke() == defaultdict(None, x=1, y=2)
     True
     """
+
+    def __init__(self):
+        pass
+
     @classmethod
     def create(cls, function, *args, **kwargs):
         """
@@ -602,6 +606,8 @@ class CachingFileStore(FileStore):
         The cache parameter will be used only if the file isn't already in the cache, and
         provided user path (if specified) is in the scope of local temp dir.
 
+        :param fileStoreID:
+        :param userPath:
         :param bool cache: If True, a copy of the file will be saved into a cache that can be
                used by other workers. caching supports multiple concurrent workers requesting the
                same file by allowing only one to download the file while the others wait for it to
@@ -1279,6 +1285,7 @@ class CachingFileStore(FileStore):
     def findAndHandleDeadJobs(cls, nodeInfo, batchSystemShutdown=False):
         """
 
+        :param batchSystemShutdown:
         :param toil.fileStore.CachingFileStore._CacheState nodeInfo: The state of the node cache as
                a _CacheState object
         """

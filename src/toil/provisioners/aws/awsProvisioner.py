@@ -340,7 +340,8 @@ class AWSProvisioner(AbstractProvisioner):
         instance = self._getClusterInstance(md)
         return str(instance.tags["Name"])
 
-    def _getClusterInstance(self, md):
+    @staticmethod
+    def _getClusterInstance(md):
         zone = getCurrentAWSZone()
         region = Context.availability_zone_re.match(zone).group(1)
         conn = boto.ec2.connect_to_region(region)
@@ -359,7 +360,8 @@ class AWSProvisioner(AbstractProvisioner):
             return True
         return False
 
-    def _setSSH(self):
+    @staticmethod
+    def _setSSH():
         if not os.path.exists('/root/.sshSuccess'):
             subprocess.check_call(['ssh-keygen', '-f', '/root/.ssh/id_rsa', '-t', 'rsa', '-N', ''])
             with open('/root/.sshSuccess', 'w') as f:
@@ -846,7 +848,7 @@ class AWSProvisioner(AbstractProvisioner):
                     else:
                         ctx.iam.remove_role_from_instance_profile(iamRoleName,
                                                                   profile.roles.member.role_name)
-                for attempt in retry(predicate=addRoleErrors):
-                    with attempt:
+                for retry_attempt in retry(predicate=addRoleErrors):
+                    with retry_attempt:
                         ctx.iam.add_role_to_instance_profile(iamRoleName, iamRoleName)
         return profile_arn

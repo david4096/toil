@@ -408,7 +408,8 @@ class Context(object):
             name = name[len(self.namespace):]
         return name
 
-    def base_name(self, name):
+    @staticmethod
+    def base_name(name):
         """
         Return the last component of a name, absolute or relative.
 
@@ -689,7 +690,8 @@ class Context(object):
                                      get_policy=self.iam.get_user_policy,
                                      put_policy=self.iam.put_user_policy)
 
-    def __setup_entity_policies(self, entity_name, policies,
+    @staticmethod
+    def __setup_entity_policies(entity_name, policies,
                                 list_policies, delete_policy, get_policy, put_policy):
         # Delete superfluous policies
         policy_names = set(list_policies(entity_name).policy_names)
@@ -758,7 +760,8 @@ class Context(object):
     def _get_all_instance_profiles(self):
         return self._pager(self.iam.list_instance_profiles, 'instance_profiles')
 
-    def _pager(self, requestor_callable, result_attribute_name):
+    @staticmethod
+    def _pager(requestor_callable, result_attribute_name):
         marker = None
         while True:
             result = requestor_callable(marker=marker)
@@ -800,7 +803,8 @@ class Context(object):
         return [sg for sg in self.ec2.get_all_security_groups()
                 if self.try_contains_aws_name(sg.name)]
 
-    def delete_security_groups(self, security_groups):
+    @staticmethod
+    def delete_security_groups(security_groups):
         log.debug('Deleting security groups %r', security_groups)
         for sg in security_groups:
             with out_exception('security group', sg.name):

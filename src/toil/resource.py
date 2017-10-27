@@ -65,6 +65,9 @@ class Resource(namedtuple('Resource', ('name', 'pathHash', 'url', 'contentHash')
     ZIP archive of that directory.
     """
 
+    def __init__(self):
+        pass
+
     resourceEnvNamePrefix = 'JTRES_'
 
     rootDirPathEnvName = resourceEnvNamePrefix + 'ROOT'
@@ -252,6 +255,9 @@ class FileResource(Resource):
     A resource read from a file on the leader.
     """
 
+    def __init__(self):
+        pass
+
     @classmethod
     def _load(cls, path):
         return open(path)
@@ -271,6 +277,9 @@ class DirectoryResource(Resource):
     directory. All files in that directory (and any subdirectories) will be included. The directory
     may be a package but it does not need to be.
     """
+
+    def __init__(self):
+        pass
 
     @classmethod
     def _load(cls, path):
@@ -312,6 +321,10 @@ class VirtualEnvResource(DirectoryResource):
     A resource read from a virtualenv on the leader. All modules and packages found in the
     virtualenv's site-packages directory will be included.
     """
+
+    def __init__(self):
+        pass
+
     @classmethod
     def _load(cls, path):
         """

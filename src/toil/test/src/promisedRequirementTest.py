@@ -89,7 +89,8 @@ class hidden(object):
                 options.disableCaching = True
             return options
 
-        def getCounterPath(self, tempDir):
+        @staticmethod
+        def getCounterPath(tempDir):
             """
             Returns path to a counter file
             :param str tempDir: path to test directory

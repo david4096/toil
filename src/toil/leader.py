@@ -175,7 +175,7 @@ class Leader(object):
             try:
 
                 # Create cluster scaling processes if not None
-                if self.clusterScaler != None:
+                if self.clusterScaler is not None:
                     self.clusterScaler.start()
 
                 try:

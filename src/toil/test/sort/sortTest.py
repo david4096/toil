@@ -323,13 +323,16 @@ class SortTest(ToilTest, MesosTestSupport, ParasolTestSupport):
     def _awsJobStore(self):
         return 'aws:%s:sort-test-%s' % (self.awsRegion(), uuid4())
 
-    def _azureJobStore(self):
+    @staticmethod
+    def _azureJobStore():
         accountName = os.getenv('TOIL_AZURE_KEYNAME')
         return "azure:%s:sort-test-%s" % (accountName, uuid4())
 
-    def _googleJobStore(self):
+    @staticmethod
+    def _googleJobStore():
         return "google:cgc-05-0006:sort-test-%s" % uuid4()
 
-    def _loadFile(self, path):
+    @staticmethod
+    def _loadFile(path):
         with open(path, 'r') as f:
             return f.readlines()

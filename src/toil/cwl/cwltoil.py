@@ -219,7 +219,8 @@ class ToilCommandLineTool(cwltool.draft2tool.CommandLineTool):
 
     """
 
-    def makePathMapper(self, reffiles, stagedir, **kwargs):
+    @staticmethod
+    def makePathMapper(reffiles, stagedir, **kwargs):
         return ToilPathMapper(reffiles, kwargs["basedir"], stagedir,
                               separateDirs=kwargs.get("separateDirs", True),
                               get_file=kwargs["toil_get_file"])

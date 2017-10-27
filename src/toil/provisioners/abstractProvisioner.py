@@ -80,6 +80,7 @@ class AbstractProvisioner(with_metaclass(ABCMeta, object)):
         treated differently than autoscaled nodes in that they should not
         be automatically terminated.
 
+        :param preemptable:
         :param nodes: list of Node objects
         """
         prefix = 'non-' if not preemptable else ''
@@ -92,6 +93,7 @@ class AbstractProvisioner(with_metaclass(ABCMeta, object)):
         """
         Used to add worker nodes to the cluster
 
+        :param nodeType:
         :param numNodes: The number of nodes to add
         :param preemptable: whether or not the nodes will be preemptable
         :return: number of nodes successfully added
@@ -113,6 +115,7 @@ class AbstractProvisioner(with_metaclass(ABCMeta, object)):
         Gets all nodes of the given preemptability from the provisioner.
         Includes both static and autoscaled nodes.
 
+        :param nodeType:
         :param preemptable: Boolean value indicating whether to return preemptable nodes or
            non-preemptable nodes
         :return: list of Node objects
@@ -137,6 +140,7 @@ class AbstractProvisioner(with_metaclass(ABCMeta, object)):
         shape defines key properties of a machine, such as its number of cores or the time
         between billing intervals.
 
+        :param preemptable:
         :param str nodeType: Node type name to return the shape of.
 
         :rtype: Shape
@@ -153,9 +157,6 @@ class AbstractProvisioner(with_metaclass(ABCMeta, object)):
         :param clusterName: name of the cluster to target
         :param args: list of string arguments to rsync. Identical to the normal arguments to rsync, but the
            host name of the remote host can be omitted. ex) ['/localfile', ':/remotedest']
-        :param \**kwargs:
-           See below
-
         :Keyword Arguments:
             * *strict*: if False, strict host key checking is disabled. (Enabled by default.)
         """
@@ -182,7 +183,6 @@ class AbstractProvisioner(with_metaclass(ABCMeta, object)):
         SSH into the leader instance of the specified cluster with the specified arguments to SSH.
         :param clusterName: name of the cluster to target
         :param args: list of string arguments to ssh.
-        :param strict: If False, strict host key checking is disabled. (Enabled by default.)
         """
         raise NotImplementedError
 

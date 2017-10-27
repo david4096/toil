@@ -89,7 +89,8 @@ class AbstractAWSAutoscaleTest(ToilTest):
         self.destroyClusterUtil()
         self.cleanJobStoreUtil()
 
-    def getMatchingRoles(self, clusterName):
+    @staticmethod
+    def getMatchingRoles(clusterName):
         from toil.provisioners.aws.awsProvisioner import AWSProvisioner
         ctx = AWSProvisioner._buildContext(clusterName)
         roles = list(ctx.local_roles())

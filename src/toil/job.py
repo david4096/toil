@@ -741,6 +741,7 @@ class Job(JobLikeObject):
             Deprecated by toil.common.Toil.run. Runs the toil workflow using the given options
             (see Job.Runner.getDefaultOptions and Job.Runner.addToilOptions) starting with this
             job.
+            :param options:
             :param toil.job.Job job: root job of the workflow
             :raises: toil.leader.FailedJobsException if at the end of function \
             their remain failed jobs.
@@ -1600,14 +1601,14 @@ class ServiceJob(Job):
 
             #Now flag that the service is running jobs can connect to it
             logger.debug("Removing the start jobStoreID to indicate that establishment of the service")
-            assert self.jobGraph.startJobStoreID != None
+            assert self.jobGraph.startJobStoreID is not None
             if fileStore.jobStore.fileExists(self.jobGraph.startJobStoreID):
                 fileStore.jobStore.deleteFile(self.jobGraph.startJobStoreID)
             assert not fileStore.jobStore.fileExists(self.jobGraph.startJobStoreID)
 
             #Now block until we are told to stop, which is indicated by the removal
             #of a file
-            assert self.jobGraph.terminateJobStoreID != None
+            assert self.jobGraph.terminateJobStoreID is not None
             while True:
                 # Check for the terminate signal
                 if not fileStore.jobStore.fileExists(self.jobGraph.terminateJobStoreID):

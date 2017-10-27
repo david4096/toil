@@ -272,6 +272,9 @@ class AzureJobStore(AbstractJobStore):
         return dict(AZURE_ACCOUNT_KEY=self.accountKey)
 
     class BlobInfo(namedtuple('BlobInfo', ('account', 'container', 'name'))):
+        def __init__(self):
+            pass
+
         @property
         @memoize
         def service(self):
@@ -468,7 +471,8 @@ class AzureJobStore(AbstractJobStore):
         jobStoreFileID = self._newFileID(sharedFileName)
         return self.getPublicUrl(jobStoreFileID)
 
-    def _newJobID(self):
+    @staticmethod
+    def _newJobID():
         # raw UUIDs don't work for Azure property names because the '-' character is disallowed.
         return str(uuid.uuid4()).replace('-', '_')
 
@@ -527,7 +531,8 @@ class AzureJobStore(AbstractJobStore):
                         raise
         return AzureBlobContainer(self.blobService, containerName)
 
-    def _sanitizeTableName(self, tableName):
+    @staticmethod
+    def _sanitizeTableName(tableName):
         """
         Azure table names must start with a letter and be alphanumeric.
 

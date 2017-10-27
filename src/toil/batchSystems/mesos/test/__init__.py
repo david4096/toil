@@ -52,7 +52,8 @@ class MesosTestSupport(object):
             self.popen.wait()
             log.info('Exiting %s', self.__class__.__name__)
 
-        def findMesosBinary(self, name):
+        @staticmethod
+        def findMesosBinary(name):
             try:
                 return next(which(name))
             except StopIteration:

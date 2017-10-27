@@ -24,7 +24,8 @@ from toil.test import ToilTest, needs_mesos, slow
 @needs_mesos
 class DataStructuresTest(ToilTest):
 
-    def _getJob(self, cores=1, memory=1000, disk=5000, preemptable=True):
+    @staticmethod
+    def _getJob(cores=1, memory=1000, disk=5000, preemptable=True):
         from toil.batchSystems.mesos import ResourceRequirement
         from toil.batchSystems.mesos import ToilJob
 

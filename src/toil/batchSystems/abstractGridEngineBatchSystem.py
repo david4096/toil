@@ -278,8 +278,8 @@ class AbstractGridEngineBatchSystem(BatchSystemSupport):
             """
             Returns job exit code. Implementation-specific; called by
             AbstractGridEngineWorker.checkOnJobs()
+            :param batchJobID:
 
-            :param string batchjobID: batch system job ID
             """
             raise NotImplementedError()
 
@@ -420,7 +420,8 @@ class AbstractGridEngineBatchSystem(BatchSystemSupport):
     def getRescueBatchJobFrequency(cls):
         return 30 * 60 # Half an hour
 
-    def sleepSeconds(self, sleeptime=1):
+    @staticmethod
+    def sleepSeconds(sleeptime=1):
         """ Helper function to drop on all state-querying functions to avoid over-querying.
         """
         time.sleep(sleeptime)

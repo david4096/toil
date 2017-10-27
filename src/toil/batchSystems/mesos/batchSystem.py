@@ -266,7 +266,8 @@ class MesosBatchSystem(BatchSystemSupport,
     def getRescueBatchJobFrequency(cls):
         return 30 * 60  # Half an hour
 
-    def _buildExecutor(self):
+    @staticmethod
+    def _buildExecutor():
         """
         Creates and returns an ExecutorInfo instance representing our executor implementation.
         """
@@ -323,18 +324,21 @@ class MesosBatchSystem(BatchSystemSupport,
         if driver_result != mesos_pb2.DRIVER_STOPPED:
             raise RuntimeError("Mesos driver failed with %i", driver_result)
 
-    def registered(self, driver, frameworkId, masterInfo):
+    @staticmethod
+    def registered(driver, frameworkId, masterInfo):
         """
         Invoked when the scheduler successfully registers with a Mesos master
         """
         log.debug("Registered with framework ID %s", frameworkId.value)
 
-    def _declineAllOffers(self, driver, offers):
+    @staticmethod
+    def _declineAllOffers(driver, offers):
         for offer in offers:
             log.debug("Declining offer %s.", offer.id.value)
             driver.declineOffer(offer.id)
 
-    def _parseOffer(self, offer):
+    @staticmethod
+    def _parseOffer(offer):
         cores = 0
         memory = 0
         disk = 0

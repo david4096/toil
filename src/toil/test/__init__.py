@@ -229,7 +229,8 @@ class ToilTest(unittest.TestCase):
         if capture:
             return stdout
 
-    def _getScriptSource(self, callable_):
+    @staticmethod
+    def _getScriptSource(callable_):
         """
         Returns the source code of the body of given callable as a string, dedented. This is a
         naught but incredibly useful trick that lets you embed user scripts as nested functions

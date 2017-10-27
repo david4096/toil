@@ -98,6 +98,9 @@ class ParasolTestSupport(object):
 
     @InnerClass
     class ParasolWorkerThread(ParasolThread):
+        def __init__(self):
+            pass
+
         def parasolCommand(self):
             return ['paraNode',
                     '-cpu=%i' % self.outer.numCores,

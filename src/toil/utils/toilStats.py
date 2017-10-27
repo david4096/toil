@@ -94,7 +94,7 @@ def checkOptions(options, parser):
     """
     logger.info("Parsed arguments")
     logger.info("Checking if we have files for toil")
-    if options.jobStore == None:
+    if options.jobStore is None:
         parser.error("Specify --jobStore")
     defaultCategories = ["time", "clock", "wait", "memory"]
     if options.categories is None:

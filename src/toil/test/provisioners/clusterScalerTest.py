@@ -60,7 +60,8 @@ if False:
 
 
 class ClusterScalerTest(ToilTest):
-    def testBinPacking(self):
+    @staticmethod
+    def testBinPacking():
         """
         Tests the bin-packing method used by the cluster scaler.
         """
@@ -84,7 +85,8 @@ class ClusterScalerTest(ToilTest):
             logger.info("Made the following node reservations: %s" % numberOfBins)
 
 
-    def _testClusterScaling(self, config, numJobs, numPreemptableJobs, jobShape):
+    @staticmethod
+    def _testClusterScaling(config, numJobs, numPreemptableJobs, jobShape):
         """
         Test the ClusterScaler class with different patterns of job creation. Tests ascertain
         that autoscaling occurs and that all the jobs are run.
@@ -342,6 +344,7 @@ class MockBatchSystemAndProvisioner(AbstractScalableBatchSystem, AbstractProvisi
         """
         Returns a list of Node objects, each representing a worker node in the cluster
         
+        :param nodeType:
         :param preemptable: If True only return preemptable nodes else return non-preemptable nodes
         :return: list of Node
         """
