@@ -15,6 +15,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import str
 from builtins import range
@@ -125,8 +126,8 @@ class SingleMachineBatchSystem(BatchSystemSupport):
 
         if not self.debugWorker:
             log.debug('Setting up the thread pool with %i workers, '
-                     'given a minimum CPU fraction of %f '
-                     'and a maximum CPU value of %i.', self.numWorkers, self.minCores, maxCores)
+                      'given a minimum CPU fraction of %f '
+                      'and a maximum CPU value of %i.', self.numWorkers, self.minCores, maxCores)
             for i in range(self.numWorkers):
                 worker = Thread(target=self.worker, args=(self.inputQueue,))
                 self.workerThreads.append(worker)
@@ -226,8 +227,8 @@ class SingleMachineBatchSystem(BatchSystemSupport):
                                         'set to {}.'.format(jobNode.jobName, cores, self.maxCores, self.scale))
         assert cores >= self.minCores
         assert jobNode.memory <= self.maxMemory, ('The job {} is requesting {} bytes of memory, more than '
-                                          'the maximum of {} this batch system was configured '
-                                          'with.'.format(jobNode.jobName, jobNode.memory, self.maxMemory))
+                                                  'the maximum of {} this batch system was configured '
+                                                  'with.'.format(jobNode.jobName, jobNode.memory, self.maxMemory))
 
         self.checkResourceRequest(jobNode.memory, cores, jobNode.disk)
         log.debug("Issuing the command: %s with memory: %i, cores: %i, disk: %i" % (
@@ -302,7 +303,8 @@ class SingleMachineBatchSystem(BatchSystemSupport):
     @classmethod
     def setOptions(cls, setOption):
         setOption("scale", default=1)
-        
+
+
 class Info(object):
     # Can't use namedtuple here since killIntended needs to be mutable
     def __init__(self, startTime, popen, killIntended):
@@ -380,5 +382,3 @@ class ResourcePool(object):
             self.requested = requested
             self.available = available
             self.resource = resource
-
-

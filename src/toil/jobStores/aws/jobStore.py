@@ -15,6 +15,7 @@
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import str
 from builtins import range
@@ -230,17 +231,17 @@ class AWSJobStore(AbstractJobStore):
                             assert False
                         registry_domain.put_attributes(item_name=self.namePrefix,
                                                        attributes=attributes)
-    
+
     def _awsJobFromItem(self, item):
         if "overlargeID" in item:
             assert self.fileExists(item["overlargeID"])
-            #This is an overlarge job, download the actual attributes
-            #from the file store
+            # This is an overlarge job, download the actual attributes
+            # from the file store
             log.debug("Loading overlarge job from S3.")
             with self.readFileStream(item["overlargeID"]) as fh:
                 binary = fh.read()
         else:
-            binary,_ = SDBHelper.attributesToBinary(item)
+            binary, _ = SDBHelper.attributesToBinary(item)
             assert binary is not None
         job = pickle.loads(binary)
         return job
@@ -248,7 +249,7 @@ class AWSJobStore(AbstractJobStore):
     def _awsJobToItem(self, job):
         binary = pickle.dumps(job, protocol=pickle.HIGHEST_PROTOCOL)
         if len(binary) > SDBHelper.maxBinarySize():
-            #Store as an overlarge job in S3
+            # Store as an overlarge job in S3
             with self.writeFileStream() as (writable, fileID):
                 writable.write(binary)
             item = SDBHelper.binaryToAttributes('')
@@ -263,15 +264,15 @@ class AWSJobStore(AbstractJobStore):
     def batch(self):
         self._batchedJobGraphs = []
         yield
-        batches = [self._batchedJobGraphs[i:i + self.jobsPerBatchInsert] for i in range(0, len(self._batchedJobGraphs), self.jobsPerBatchInsert)]
+        batches = [self._batchedJobGraphs[i:i + self.jobsPerBatchInsert] for i in
+                   range(0, len(self._batchedJobGraphs), self.jobsPerBatchInsert)]
 
         for batch in batches:
-            items = {jobGraph.jobStoreID:self._awsJobToItem(jobGraph) for jobGraph in batch}
+            items = {jobGraph.jobStoreID: self._awsJobToItem(jobGraph) for jobGraph in batch}
             for attempt in retry_sdb():
                 with attempt:
                     assert self.jobsDomain.batch_put_attributes(items)
         self._batchedJobGraphs = None
-            
 
     def create(self, jobNode):
         jobStoreID = self._newJobID()
@@ -322,7 +323,7 @@ class AWSJobStore(AbstractJobStore):
 
     def update(self, job):
         log.debug("Updating job %s", job.jobStoreID)
-        item = self._awsJobToItem(job)        
+        item = self._awsJobToItem(job)
         for attempt in retry_sdb():
             with attempt:
                 assert self.jobsDomain.put_attributes(bytes(job.jobStoreID), item)
@@ -333,7 +334,7 @@ class AWSJobStore(AbstractJobStore):
         # remove job and replace with jobStoreId.
         log.debug("Deleting job %s", jobStoreID)
 
-        #If the job is overlarge, delete its file from the filestore
+        # If the job is overlarge, delete its file from the filestore
         item = None
         for attempt in retry_sdb():
             with attempt:
@@ -1131,7 +1132,7 @@ class AWSJobStore(AbstractJobStore):
 
         def _copyKey(self, srcKey, dstBucketName, dstKeyName, headers=None):
             headers = headers or {}
-            assert srcKey.size is not None 
+            assert srcKey.size is not None
             if srcKey.size > self.outer.partSize:
                 return copyKeyMultipart(srcKey=srcKey,
                                         dstBucketName=dstBucketName,
@@ -1219,7 +1220,6 @@ class AWSJobStore(AbstractJobStore):
                             'x-amz-server-side-encryption-customer-key-md5': encodedSseKeyMd5}
             else:
                 return {}
-
 
         def __repr__(self):
             r = custom_repr
@@ -1309,6 +1309,7 @@ class AWSJobStore(AbstractJobStore):
 aRepr = reprlib.Repr()
 aRepr.maxstring = 38  # so UUIDs don't get truncated (36 for UUID plus 2 for quotes)
 custom_repr = aRepr.repr
+
 
 class BucketLocationConflictException(Exception):
     def __init__(self, bucketRegion):

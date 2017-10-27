@@ -14,6 +14,7 @@
 
 from __future__ import absolute_import, print_function
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import map
 from builtins import str
@@ -63,6 +64,7 @@ class DeferredFunction(namedtuple('DeferredFunction', 'function args kwargs name
     >>> df.invoke() == defaultdict(None, x=1, y=2)
     True
     """
+
     @classmethod
     def create(cls, function, *args, **kwargs):
         """
@@ -276,6 +278,7 @@ class FileStore(with_metaclass(ABCMeta, object)):
         """
         Utility class to read and write dill-ed state dictionaries from/to a file into a namespace.
         """
+
         def __init__(self, stateDict):
             assert isinstance(stateDict, dict)
             self.__dict__.update(stateDict)
@@ -541,7 +544,7 @@ class CachingFileStore(FileStore):
             # the two have distinct nlink counts.
             # Can read without a lock because we're only reading job-specific info.
             jobSpecificFiles = list(self._CacheState._load(self.cacheStateFile).jobState[
-                self.jobID]['filesToFSIDs'].keys())
+                                        self.jobID]['filesToFSIDs'].keys())
             # Saying nlink is 2 implicitly means we are using the job file store, and it is on
             # the same device as the work dir.
             if self.nlinkThreshold == 2 and absLocalFileName not in jobSpecificFiles:
@@ -1120,7 +1123,7 @@ class CachingFileStore(FileStore):
                 'jobName': self.jobName,
                 'jobReqs': newJobReqs,
                 'jobDir': self.localTempDir,
-                'jobSpecificFiles': defaultdict(partial(defaultdict,int)),
+                'jobSpecificFiles': defaultdict(partial(defaultdict, int)),
                 'filesToFSIDs': defaultdict(set),
                 'pid': os.getpid(),
                 'deferredFunctions': []}
@@ -1236,6 +1239,7 @@ class CachingFileStore(FileStore):
         caching equation is balanced or not.  It extends the _StateFile class to add other cache
         related functions.
         """
+
         @classmethod
         @contextmanager
         def open(cls, outer=None):
@@ -1845,6 +1849,7 @@ class FileID(str):
     A class to wrap the job store file id returned by writeGlobalFile and any attributes we may want
     to add to it.
     """
+
     def __new__(cls, fileStoreID, *args):
         return super(FileID, cls).__new__(cls, fileStoreID)
 

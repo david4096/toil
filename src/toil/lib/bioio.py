@@ -48,7 +48,10 @@ def getLogLevelString(logger=None):
         logger = rootLogger
     return logging.getLevelName(logger.getEffectiveLevel())
 
+
 __loggingFiles = []
+
+
 def addLoggingFileHandler(fileName, rotatingLogging=False):
     if fileName in __loggingFiles:
         return
@@ -77,7 +80,8 @@ def setLogLevel(level, logger=None):
     # There are quite a few cases where we expect AWS requests to fail, but it seems
     # that boto handles these by logging the error *and* raising an exception. We
     # don't want to confuse the user with those error messages.
-    logging.getLogger( 'boto' ).setLevel( logging.CRITICAL )
+    logging.getLogger('boto').setLevel(logging.CRITICAL)
+
 
 def logFile(fileName, printFunction=logger.info):
     """Writes out a formatted version of the given log file
@@ -92,7 +96,8 @@ def logFile(fileName, printFunction=logger.info):
         printFunction("%s:\t%s" % (shortName, line))
         line = fileHandle.readline()
     fileHandle.close()
-    
+
+
 def logStream(fileHandle, shortName, printFunction=logger.info):
     """Writes out a formatted version of the given log stream.
     """
@@ -104,6 +109,7 @@ def logStream(fileHandle, shortName, printFunction=logger.info):
         printFunction("%s:\t%s" % (shortName, line))
         line = fileHandle.readline()
     fileHandle.close()
+
 
 def addLoggingOptions(parser):
     # Wrapper function that allows toil to be used with both the optparse and
@@ -117,7 +123,9 @@ def addLoggingOptions(parser):
                            "addLoggingOptions(), %s. Expecting "
                            "argparse.ArgumentParser" % parser.__class__)
 
+
 supportedLogLevels = (logging.CRITICAL, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG)
+
 
 def _addLoggingOptions(addOptionFn):
     """
@@ -125,7 +133,7 @@ def _addLoggingOptions(addOptionFn):
     """
     # BEFORE YOU ADD OR REMOVE OPTIONS TO THIS FUNCTION, KNOW THAT YOU MAY ONLY USE VARIABLES ACCEPTED BY BOTH
     # optparse AND argparse FOR EXAMPLE, YOU MAY NOT USE default=%default OR default=%(default)s
-    defaultLogLevelName = logging.getLevelName( defaultLogLevel )
+    defaultLogLevelName = logging.getLevelName(defaultLogLevel)
     addOptionFn("--logOff", dest="logLevel",
                 default=defaultLogLevelName,
                 action="store_const", const="CRITICAL",
@@ -143,6 +151,7 @@ def _addLoggingOptions(addOptionFn):
     addOptionFn("--logFile", dest="logFile", help="File to log in")
     addOptionFn("--rotatingLogging", dest="logRotating", action="store_true", default=False,
                 help="Turn on rotating logging, which prevents log files getting too big.")
+
 
 def setLoggingFromOptions(options):
     """
@@ -175,6 +184,7 @@ def system(command):
     logger.debug('Running: %r', command)
     subprocess.check_call(command, shell=isinstance(command, string_types), bufsize=-1)
 
+
 def getTotalCpuTimeAndMemoryUsage():
     """
     Gives the total cpu time of itself and all its children, and the maximum RSS memory usage of
@@ -186,15 +196,18 @@ def getTotalCpuTimeAndMemoryUsage():
     totalMemoryUsage = me.ru_maxrss + childs.ru_maxrss
     return totalCPUTime, totalMemoryUsage
 
+
 def getTotalCpuTime():
     """Gives the total cpu time, including the children.
     """
     return getTotalCpuTimeAndMemoryUsage()[0]
 
+
 def getTotalMemoryUsage():
     """Gets the amount of memory used by the process and its largest child.
     """
     return getTotalCpuTimeAndMemoryUsage()[1]
+
 
 def absSymPath(path):
     """like os.path.abspath except it doesn't dereference symlinks
@@ -202,10 +215,11 @@ def absSymPath(path):
     curr_path = os.getcwd()
     return os.path.normpath(os.path.join(curr_path, path))
 
+
 #########################################################
 #########################################################
 #########################################################
-#testing settings
+# testing settings
 #########################################################
 #########################################################
 #########################################################
@@ -223,17 +237,21 @@ class TestStatus(object):
 
     def getTestStatus():
         return TestStatus.TEST_STATUS
+
     getTestStatus = staticmethod(getTestStatus)
 
     def setTestStatus(status):
-        assert status in (TestStatus.TEST_SHORT, TestStatus.TEST_MEDIUM, TestStatus.TEST_LONG, TestStatus.TEST_VERY_LONG)
+        assert status in (
+        TestStatus.TEST_SHORT, TestStatus.TEST_MEDIUM, TestStatus.TEST_LONG, TestStatus.TEST_VERY_LONG)
         TestStatus.TEST_STATUS = status
+
     setTestStatus = staticmethod(setTestStatus)
 
     def getSaveErrorLocation():
         """Location to in which to write inputs which created test error.
         """
         return TestStatus.SAVE_ERROR_LOCATION
+
     getSaveErrorLocation = staticmethod(getSaveErrorLocation)
 
     def setSaveErrorLocation(dir):
@@ -242,6 +260,7 @@ class TestStatus(object):
         logger.info("Location to save error files in: %s" % dir)
         assert os.path.isdir(dir)
         TestStatus.SAVE_ERROR_LOCATION = dir
+
     setSaveErrorLocation = staticmethod(setSaveErrorLocation)
 
     def getTestSetup(shortTestNo=1, mediumTestNo=5, longTestNo=100, veryLongTestNo=0):
@@ -251,8 +270,9 @@ class TestStatus(object):
             return mediumTestNo
         elif TestStatus.TEST_STATUS == TestStatus.TEST_LONG:
             return longTestNo
-        else: #Used for long example tests
+        else:  # Used for long example tests
             return veryLongTestNo
+
     getTestSetup = staticmethod(getTestSetup)
 
     def getPathToDataSets():
@@ -262,19 +282,22 @@ class TestStatus(object):
         """
         assert "SON_TRACE_DATASETS" in os.environ
         return os.environ["SON_TRACE_DATASETS"]
+
     getPathToDataSets = staticmethod(getPathToDataSets)
 
-def getBasicOptionParser( parser=None):
+
+def getBasicOptionParser(parser=None):
     if parser is None:
         parser = ArgumentParser()
 
     addLoggingOptions(parser)
 
     parser.add_argument("--tempDirRoot", dest="tempDirRoot", type=str,
-                      help="Path to where temporary directory containing all temp files are created, by default uses the current working directory as the base.",
-                      default=tempfile.gettempdir())
+                        help="Path to where temporary directory containing all temp files are created, by default uses the current working directory as the base.",
+                        default=tempfile.gettempdir())
 
     return parser
+
 
 def parseBasicOptions(parser):
     """Setups the standard things from things added by getBasicOptionParser.
@@ -283,16 +306,19 @@ def parseBasicOptions(parser):
 
     setLoggingFromOptions(options)
 
-    #Set up the temp dir root
-    if options.tempDirRoot == "None": # FIXME: Really, a string containing the word None?
+    # Set up the temp dir root
+    if options.tempDirRoot == "None":  # FIXME: Really, a string containing the word None?
         options.tempDirRoot = tempfile.gettempdir()
 
     return options
 
+
 def getRandomAlphaNumericString(length=10):
     """Returns a random alpha numeric string of the given length.
     """
-    return "".join([ random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz') for i in range(0, length) ])
+    return "".join(
+        [random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz') for i in range(0, length)])
+
 
 def makePublicDir(dirName):
     """Makes a given subdirectory if it doesn't already exist, making sure it is public.
@@ -301,6 +327,7 @@ def makePublicDir(dirName):
         os.mkdir(dirName)
         os.chmod(dirName, 0o777)
     return dirName
+
 
 def getTempFile(suffix="", rootDir=None):
     """Returns a string representing a temporary file, that must be manually deleted
@@ -312,5 +339,5 @@ def getTempFile(suffix="", rootDir=None):
     else:
         tmpFile = os.path.join(rootDir, "tmp_" + getRandomAlphaNumericString() + suffix)
         open(tmpFile, 'w').close()
-        os.chmod(tmpFile, 0o777) #Ensure everyone has access to the file.
+        os.chmod(tmpFile, 0o777)  # Ensure everyone has access to the file.
         return tmpFile

@@ -32,8 +32,8 @@ from toil.batchSystems.abstractGridEngineBatchSystem import AbstractGridEngineBa
 
 logger = logging.getLogger(__name__)
 
-class SlurmBatchSystem(AbstractGridEngineBatchSystem):
 
+class SlurmBatchSystem(AbstractGridEngineBatchSystem):
     class Worker(AbstractGridEngineBatchSystem.Worker):
 
         def getRunningJobIDs(self):
@@ -79,35 +79,35 @@ class SlurmBatchSystem(AbstractGridEngineBatchSystem):
 
         def getJobExitCode(self, slurmJobID):
             logger.debug("Getting exit code for slurm job %d", int(slurmJobID))
-            
+
             state, rc = self._getJobDetailsFromSacct(slurmJobID)
-            
+
             if rc == -999:
                 state, rc = self._getJobDetailsFromScontrol(slurmJobID)
-            
+
             logger.debug("s job state is %s", state)
             # If Job is in a running state, return None to indicate we don't have an update                                 
             if state in ('PENDING', 'RUNNING', 'CONFIGURING', 'COMPLETING', 'RESIZING', 'SUSPENDED'):
                 return None
-            
+
             return rc
-            
+
         def _getJobDetailsFromSacct(self, slurmJobID):
             # SLURM job exit codes are obtained by running sacct.
             args = ['sacct',
-                    '-n', # no header
-                    '-j', str(slurmJobID), # job
-                    '--format', 'State,ExitCode', # specify output columns
-                    '-P', # separate columns with pipes
-                    '-S', '1970-01-01'] # override start time limit
-            
+                    '-n',  # no header
+                    '-j', str(slurmJobID),  # job
+                    '--format', 'State,ExitCode',  # specify output columns
+                    '-P',  # separate columns with pipes
+                    '-S', '1970-01-01']  # override start time limit
+
             process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             rc = process.returncode
-            
+
             if rc != 0:
                 # no accounting system or some other error
                 return (None, -999)
-            
+
             for line in process.stdout:
                 values = line.strip().split('|')
                 if len(values) < 2:
@@ -126,26 +126,26 @@ class SlurmBatchSystem(AbstractGridEngineBatchSystem):
                     'show',
                     'job',
                     str(slurmJobID)]
-    
+
             process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    
+
             job = dict()
             for line in process.stdout:
                 values = line.strip().split()
-    
+
                 # If job information is not available an error is issued:
                 # slurm_load_jobs error: Invalid job id specified
                 # There is no job information, so exit.
-                if len(values)>0 and values[0] == 'slurm_load_jobs':
+                if len(values) > 0 and values[0] == 'slurm_load_jobs':
                     return (None, None)
-                
+
                 # Output is in the form of many key=value pairs, multiple pairs on each line
                 # and multiple lines in the output. Each pair is pulled out of each line and
                 # added to a dictionary
                 for v in values:
                     bits = v.split('=')
                     job[bits[0]] = bits[1]
-    
+
             state = job['JobState']
             try:
                 exitcode = job['ExitCode']
@@ -157,7 +157,7 @@ class SlurmBatchSystem(AbstractGridEngineBatchSystem):
                     rc = None
             except KeyError:
                 rc = None
-            
+
             return (state, rc)
 
         """
@@ -170,13 +170,13 @@ class SlurmBatchSystem(AbstractGridEngineBatchSystem):
 
             if self.boss.environment:
                 argList = []
-                
+
                 for k, v in self.boss.environment.items():
                     quoted_value = quote(os.environ[k] if v is None else v)
                     argList.append('{}={}'.format(k, quoted_value))
-                    
+
                 sbatch_line.append('--export=' + ','.join(argList))
-            
+
             if mem is not None:
                 # memory passed in is in bytes, but slurm expects megabytes
                 sbatch_line.append('--mem={}'.format(old_div(int(mem), 2 ** 20)))
@@ -186,7 +186,9 @@ class SlurmBatchSystem(AbstractGridEngineBatchSystem):
             # "Native extensions" for SLURM (see DRMAA or SAGA)
             nativeConfig = os.getenv('TOIL_SLURM_ARGS')
             if nativeConfig is not None:
-                logger.debug("Native SLURM options appended to sbatch from TOIL_SLURM_RESOURCES env. variable: {}".format(nativeConfig))
+                logger.debug(
+                    "Native SLURM options appended to sbatch from TOIL_SLURM_RESOURCES env. variable: {}".format(
+                        nativeConfig))
                 if ("--mem" in nativeConfig) or ("--cpus-per-task" in nativeConfig):
                     raise ValueError("Some resource arguments are incompatible: {}".format(nativeConfig))
 

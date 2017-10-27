@@ -31,50 +31,51 @@ from toil.leader import ToilState
 from toil.job import JobException
 from toil.version import version
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
+
 
 def main():
     """Reports the state of the toil.
     """
-    
+
     ##########################################
-    #Construct the arguments.
+    # Construct the arguments.
     ##########################################  
-    
+
     parser = getBasicOptionParser()
-    
+
     parser.add_argument("jobStore", type=str,
                         help="The location of a job store that holds the information about the "
                              "workflow whose status is to be reported on." + jobStoreLocatorHelp)
-    
+
     parser.add_argument("--verbose", dest="verbose", action="store_true",
-                      help="Print loads of information, particularly all the log files of \
+                        help="Print loads of information, particularly all the log files of \
                       jobs that failed. default=%(default)s",
-                      default=False)
-    
+                        default=False)
+
     parser.add_argument("--failIfNotComplete", dest="failIfNotComplete", action="store_true",
-                      help="Return exit value of 1 if toil jobs not all completed. default=%(default)s",
-                      default=False)
+                        help="Return exit value of 1 if toil jobs not all completed. default=%(default)s",
+                        default=False)
     parser.add_argument("--version", action='version', version=version)
     options = parseBasicOptions(parser)
     logger.info("Parsed arguments")
-    
+
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(0)
-    
+
     ##########################################
-    #Do some checks.
+    # Do some checks.
     ##########################################
-    
+
     logger.info("Checking if we have files for Toil")
     assert options.jobStore is not None
     config = Config()
     config.setOptions(options)
     ##########################################
-    #Survey the status of the job and report.
+    # Survey the status of the job and report.
     ##########################################  
-    
+
     jobStore = Toil.resumeJobStore(config.jobStore)
     try:
         rootJob = jobStore.loadRootJob()
@@ -86,6 +87,7 @@ def main():
     def traverseGraph(jobGraph):
         foundJobStoreIDs = set()
         totalJobs = []
+
         def inner(jobGraph):
             if jobGraph.jobStoreID in foundJobStoreIDs:
                 return
@@ -104,6 +106,7 @@ def main():
                         assert serviceJobStoreID not in foundJobStoreIDs
                         foundJobStoreIDs.add(serviceJobStoreID)
                         totalJobs.append(jobStore.load(serviceJobStoreID))
+
         inner(jobGraph)
         return totalJobs
 
@@ -139,7 +142,7 @@ def main():
         logger.info('These %i jobs are currently active: %s',
                     len(currentlyRunnning), ' \n'.join(map(str, currentlyRunnning)))
 
-    if options.verbose: #Verbose currently means outputting the files that have failed.
+    if options.verbose:  # Verbose currently means outputting the files that have failed.
         if failedJobs:
             msg = "Outputting logs for the %i failed jobs" % (len(failedJobs))
             msg += ": %s" % ", ".join((str(failedJob) for failedJob in failedJobs))
@@ -154,8 +157,9 @@ def main():
             print('There are no failed jobs to report.', file=sys.stderr)
 
     if totalJobs and options.failIfNotComplete:
-        exit(1) # when the workflow is complete, all jobs will have been removed from job store
+        exit(1)  # when the workflow is complete, all jobs will have been removed from job store
+
 
 def _test():
-    import doctest      
+    import doctest
     return doctest.testmod()

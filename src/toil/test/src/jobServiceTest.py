@@ -29,10 +29,12 @@ import time
 import sys
 from threading import Thread, Event
 import logging
-logger = logging.getLogger( __name__ )
+
+logger = logging.getLogger(__name__)
 from unittest import skipIf
 from toil.batchSystems.singleMachine import SingleMachineBatchSystem
 from toil.leader import FailedJobsException, DeadlockException
+
 
 class JobServiceTest(ToilTest):
     """
@@ -47,12 +49,12 @@ class JobServiceTest(ToilTest):
         """
         job = Job()
         service = TestServiceSerialization("woot")
-        startValue = job.addService(service) # Add a first service to job
-        subService = TestServiceSerialization(startValue) # Now create a child of 
+        startValue = job.addService(service)  # Add a first service to job
+        subService = TestServiceSerialization(startValue)  # Now create a child of
         # that service that takes the start value promise from the parent service
-        job.addService(subService, parentService=service) # This should work if
+        job.addService(subService, parentService=service)  # This should work if
         # serialization on services is working correctly.
-        
+
         self.runToil(job)
 
     @slow
@@ -61,7 +63,7 @@ class JobServiceTest(ToilTest):
         Tests the creation of a Job.Service with random failures of the worker.
         """
         for test in range(2):
-            outFile = getTempFile(rootDir=self._createTempDir()) # Temporary file
+            outFile = getTempFile(rootDir=self._createTempDir())  # Temporary file
             messageInt = random.randint(1, sys.maxsize)
             try:
                 # Wire up the services/jobs
@@ -88,9 +90,9 @@ class JobServiceTest(ToilTest):
                 r1 = job.addService(TestServiceSerialization("woot1"))
                 r2 = job.addService(TestServiceSerialization("woot2"))
                 r3 = job.addService(TestServiceSerialization("woot3"))
-                job.addChildFn(fnTest, [ r1, r2, r3 ], outFile)
+                job.addChildFn(fnTest, [r1, r2, r3], outFile)
                 return job
-            
+
             # This should fail as too few services available
             try:
                 self.runToil(makeWorkflow(), badWorker=0.0, maxServiceJobs=2, deadlockWait=5)
@@ -98,14 +100,14 @@ class JobServiceTest(ToilTest):
                 print("Got expected deadlock exception")
             else:
                 assert 0
-                
+
             # This should pass, as adequate services available
             self.runToil(makeWorkflow(), maxServiceJobs=3)
             # Check we get expected output 
             assert open(outFile, 'r').read() == "woot1 woot2 woot3"
         finally:
             os.remove(outFile)
-             
+
     def testServiceWithCheckpoints(self):
         """
         Tests the creation of a Job.Service with random failures of the worker, making the root job use checkpointing to 
@@ -123,7 +125,7 @@ class JobServiceTest(ToilTest):
         for test in range(1):
             # Temporary file
             outFile = getTempFile(rootDir=self._createTempDir())
-            messages = [ random.randint(1, sys.maxsize) for i in range(3) ]
+            messages = [random.randint(1, sys.maxsize) for i in range(3)]
             try:
                 # Wire up the services/jobs
                 t = Job.wrapJobFn(serviceTestRecursive, outFile, messages, checkpoint=checkpoint)
@@ -145,8 +147,8 @@ class JobServiceTest(ToilTest):
         """
         for test in range(1):
             # Temporary file
-            outFiles = [ getTempFile(rootDir=self._createTempDir()) for j in range(2) ]
-            messageBundles = [ [ random.randint(1, sys.maxsize) for i in range(3) ] for j in range(2) ]
+            outFiles = [getTempFile(rootDir=self._createTempDir()) for j in range(2)]
+            messageBundles = [[random.randint(1, sys.maxsize) for i in range(3)] for j in range(2)]
             try:
                 # Wire up the services/jobs
                 t = Job.wrapJobFn(serviceTestParallelRecursive, outFiles, messageBundles, checkpoint=True)
@@ -160,7 +162,8 @@ class JobServiceTest(ToilTest):
             finally:
                 list(map(os.remove, outFiles))
 
-    def runToil(self, rootJob, retryCount=1, badWorker=0.5, badWorkedFailInterval=0.05, maxServiceJobs=sys.maxsize, deadlockWait=60):
+    def runToil(self, rootJob, retryCount=1, badWorker=0.5, badWorkedFailInterval=0.05, maxServiceJobs=sys.maxsize,
+                deadlockWait=60):
         # Create the runner for the workflow.
         options = Job.Runner.getDefaultOptions(self._getTestJobStorePath())
         options.logLevel = "DEBUG"
@@ -170,7 +173,7 @@ class JobServiceTest(ToilTest):
         options.badWorkerFailInterval = badWorkedFailInterval
         options.servicePollingInterval = 1
         options.maxServiceJobs = maxServiceJobs
-        options.deadlockWait=deadlockWait
+        options.deadlockWait = deadlockWait
 
         # Run the workflow
         totalTrys = 0
@@ -180,28 +183,31 @@ class JobServiceTest(ToilTest):
                 break
             except FailedJobsException as e:
                 i = e.numberOfFailedJobs
-                if totalTrys > 40: #p(fail after this many restarts) = 0.5**32
-                    self.fail() #Exceeded a reasonable number of restarts
+                if totalTrys > 40:  # p(fail after this many restarts) = 0.5**32
+                    self.fail()  # Exceeded a reasonable number of restarts
                 totalTrys += 1
                 options.restart = True
+
 
 def serviceTest(job, outFile, messageInt):
     """
     Creates one service and one accessing job, which communicate with two files to establish
     that both run concurrently. 
     """
-    #Clean out out-file
+    # Clean out out-file
     open(outFile, 'w').close()
-    randInt = random.randint(1, sys.maxsize) # We create a random number that is added to messageInt and subtracted by the serviceAccessor, to prove that
+    randInt = random.randint(1,
+                             sys.maxsize)  # We create a random number that is added to messageInt and subtracted by the serviceAccessor, to prove that
     # when service test is checkpointed and restarted there is never a connection made between an earlier service and later serviceAccessor, or vice versa.
     job.addChildJobFn(serviceAccessor, job.addService(TestService(messageInt + randInt)), outFile, randInt)
+
 
 def serviceTestRecursive(job, outFile, messages):
     """
     Creates a chain of services and accessing jobs, each paired together.
     """
     if len(messages) > 0:
-        #Clean out out-file
+        # Clean out out-file
         open(outFile, 'w').close()
         randInt = random.randint(1, sys.maxsize)
         service = TestService(messages[0] + randInt)
@@ -215,12 +221,13 @@ def serviceTestRecursive(job, outFile, messages):
                                         outFile, randInt, cores=0.1)
             service = service2
 
+
 def serviceTestParallelRecursive(job, outFiles, messageBundles):
     """
     Creates multiple chains of services and accessing jobs.
     """
     for messages, outFile in zip(messageBundles, outFiles):
-        #Clean out out-file
+        # Clean out out-file
         open(outFile, 'w').close()
         if len(messages) > 0:
             randInt = random.randint(1, sys.maxsize)
@@ -234,6 +241,7 @@ def serviceTestParallelRecursive(job, outFiles, messageBundles):
                                             job.addService(service2, parentService=service),
                                             outFile, randInt, cores=0.1)
                 service = service2
+
 
 class TestService(Job.Service):
     def __init__(self, messageInt, *args, **kwargs):
@@ -273,11 +281,11 @@ class TestService(Job.Service):
     def serviceWorker(jobStore, terminate, error, inJobStoreID, outJobStoreID, messageInt):
         try:
             while True:
-                if terminate.isSet(): # Quit if we've got the terminate signal
+                if terminate.isSet():  # Quit if we've got the terminate signal
                     logger.debug("Demo service worker being told to quit")
                     return
 
-                time.sleep(0.2) # Sleep to avoid thrashing
+                time.sleep(0.2)  # Sleep to avoid thrashing
 
                 # Try reading a line from the input file
                 try:
@@ -301,6 +309,7 @@ class TestService(Job.Service):
             error.set()
             raise
 
+
 def serviceAccessor(job, communicationFiles, outFile, randInt):
     """
     Writes a random integer iinto the inJobStoreFileID file, then tries 10 times reading
@@ -317,8 +326,8 @@ def serviceAccessor(job, communicationFiles, outFile, randInt):
         fH.write("%s\n" % key)
 
     logger.debug("Trying to read key and message from outJobStoreFileID")
-    for i in range(10): # Try 10 times over
-        time.sleep(0.2) #Avoid thrashing
+    for i in range(10):  # Try 10 times over
+        time.sleep(0.2)  # Avoid thrashing
 
         # Try reading an integer from the input file and writing out the message
         with job.fileStore.jobStore.readFileStream(outJobStoreFileID) as fH:
@@ -331,12 +340,14 @@ def serviceAccessor(job, communicationFiles, outFile, randInt):
         key2, message = tokens
 
         if int(key2) == key:
-            logger.debug("Matched key's: %s, writing message: %s with randInt: %s" % (key, int(message) - randInt, randInt))
+            logger.debug(
+                "Matched key's: %s, writing message: %s with randInt: %s" % (key, int(message) - randInt, randInt))
             with open(outFile, 'a') as fH:
                 fH.write("%s\n" % (int(message) - randInt))
             return
 
-    assert 0 # Job failed to get info from the service
+    assert 0  # Job failed to get info from the service
+
 
 class TestServiceSerialization(Job.Service):
     def __init__(self, messageInt, *args, **kwargs):
@@ -354,12 +365,11 @@ class TestServiceSerialization(Job.Service):
 
     def check(self):
         return True
-    
+
+
 def fnTest(strings, outputFile):
     """
     Function concatenates the strings together and writes them to the output file
     """
     with open(outputFile, 'w') as fH:
         fH.write(" ".join(strings))
-    
-

@@ -31,6 +31,7 @@ from bd2k.util.objects import abstractclassmethod
 
 from toil.batchSystems.abstractBatchSystem import BatchSystemSupport
 from toil.batchSystems import registry
+
 try:
     from toil.cwl.cwltoil import CWL_INTERNAL_JOBS
 except ImportError:
@@ -38,6 +39,7 @@ except ImportError:
     CWL_INTERNAL_JOBS = ()
 
 logger = logging.getLogger(__name__)
+
 
 class AbstractGridEngineBatchSystem(BatchSystemSupport):
     """
@@ -190,7 +192,8 @@ class AbstractGridEngineBatchSystem(BatchSystemSupport):
             time period to talk with the scheduler.
             """
             if (self._checkOnJobsTimestamp and
-                 (datetime.now() - self._checkOnJobsTimestamp).total_seconds() < self.boss.config.statePollingWait):
+                        (
+                                    datetime.now() - self._checkOnJobsTimestamp).total_seconds() < self.boss.config.statePollingWait):
                 return self._checkOnJobsCache
 
             activity = False
@@ -283,7 +286,6 @@ class AbstractGridEngineBatchSystem(BatchSystemSupport):
             """
             raise NotImplementedError()
 
-
     def __init__(self, config, maxCores, maxMemory, maxDisk):
         super(AbstractGridEngineBatchSystem, self).__init__(config, maxCores, maxMemory, maxDisk)
 
@@ -305,7 +307,7 @@ class AbstractGridEngineBatchSystem(BatchSystemSupport):
         self.killedJobsQueue = Queue()
         # get the associated worker class here
         self.worker = self.Worker(self.newJobsQueue, self.updatedJobsQueue, self.killQueue,
-                              self.killedJobsQueue, self)
+                                  self.killedJobsQueue, self)
         self.worker.start()
         self.localBatch = registry.batchSystemFactoryFor(registry.defaultBatchSystem())()(config, maxCores,
                                                                                           maxMemory, maxDisk)
@@ -373,7 +375,8 @@ class AbstractGridEngineBatchSystem(BatchSystemSupport):
         """
         localIds = self.localBatch.getRunningBatchJobIDs()
         if (self._getRunningBatchJobIDsTimestamp and
-             (datetime.now() - self._getRunningBatchJobIDsTimestamp).total_seconds() < self.config.statePollingWait):
+                    (
+                                datetime.now() - self._getRunningBatchJobIDsTimestamp).total_seconds() < self.config.statePollingWait):
             batchIds = self._getRunningBatchJobIDsCache
         else:
             batchIds = self.worker.getRunningJobIDs()
@@ -410,7 +413,7 @@ class AbstractGridEngineBatchSystem(BatchSystemSupport):
     def setEnv(self, name, value=None):
         if value and ',' in value:
             raise ValueError(type(self).__name__ + " does not support commata in environment variable values")
-        return super(AbstractGridEngineBatchSystem,self).setEnv(name, value)
+        return super(AbstractGridEngineBatchSystem, self).setEnv(name, value)
 
     @classmethod
     def getWaitDuration(self):
@@ -418,7 +421,7 @@ class AbstractGridEngineBatchSystem(BatchSystemSupport):
 
     @classmethod
     def getRescueBatchJobFrequency(cls):
-        return 30 * 60 # Half an hour
+        return 30 * 60  # Half an hour
 
     def sleepSeconds(self, sleeptime=1):
         """ Helper function to drop on all state-querying functions to avoid over-querying.

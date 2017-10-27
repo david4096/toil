@@ -42,6 +42,7 @@ def dockerCheckOutput(job, *args, **kwargs):
                 "is deprecated, please switch to apiDockerCall().")
     return subprocessDockerCall(job=job, *args, **kwargs)
 
+
 def dockerCall(job, *args, **kwargs):
     """
     Deprecated.  Runs subprocessDockerCall() using 'subprocess.check_output()'.
@@ -53,6 +54,7 @@ def dockerCall(job, *args, **kwargs):
     logger.warn("WARNING: dockerCall() using subprocess.check_output() "
                 "is deprecated, please switch to apiDockerCall().")
     return subprocessDockerCall(job=job, *args, **kwargs)
+
 
 def subprocessDockerCall(job,
                          tool,
@@ -161,9 +163,9 @@ def subprocessDockerCall(job,
                                               for q in parameters]]
         # Use bash's set -eo pipefail to detect and abort on a failure in any
         # command in the chain
-        call = baseDockerCall + ['--entrypoint', '/bin/bash',  tool, '-c',
+        call = baseDockerCall + ['--entrypoint', '/bin/bash', tool, '-c',
                                  'set -eo pipefail && {}'.format(' | '
-                                                         .join(chain_params))]
+                                                                 .join(chain_params))]
     else:
         call = baseDockerCall + [tool] + parameters
     logger.info("Calling docker with " + repr(call))
@@ -178,6 +180,7 @@ def subprocessDockerCall(job,
 
     _fixPermissions(tool=tool, workDir=workDir)
     return out
+
 
 def apiDockerCall(job,
                   image,
@@ -282,7 +285,7 @@ def apiDockerCall(job,
         if entrypoint is None:
             entrypoint = ['/bin/bash', '-c']
         chain_params = \
-            [' '.join((pipes.quote(arg) for arg in command)) \
+            [' '.join((pipes.quote(arg) for arg in command))
              for command in parameters]
         command = ' | '.join(chain_params)
         pipe_prefix = "set -eo pipefail && "
@@ -345,7 +348,7 @@ def apiDockerCall(job,
     # If the container exits with a non-zero exit code and detach is False.
     except ContainerError:
         logger.error("Docker had non-zero exit.  Check your command: " + \
-                      repr(command))
+                     repr(command))
         raise
     except ImageNotFound:
         logger.error("Docker image not found.")
@@ -355,6 +358,7 @@ def apiDockerCall(job,
         raise create_api_error_from_http_exception(e)
     except:
         raise
+
 
 def dockerKill(container_name, client, gentleKill=False):
     """
@@ -373,11 +377,12 @@ def dockerKill(container_name, client, gentleKill=False):
             this_container = client.containers.get(container_name)
     except NotFound:
         logger.debug("Attempted to stop container, but container != exist: ",
-                      container_name)
+                     container_name)
     except requests.exceptions.HTTPError as e:
         logger.debug("Attempted to stop container, but server gave an error: ",
-                      container_name)
+                     container_name)
         raise create_api_error_from_http_exception(e)
+
 
 def dockerStop(container_name, client):
     """
@@ -387,6 +392,7 @@ def dockerStop(container_name, client):
     :param client: The docker API client object to call.
     """
     dockerKill(container_name, client, gentleKill=True)
+
 
 def containerIsRunning(container_name):
     """
@@ -407,14 +413,15 @@ def containerIsRunning(container_name):
         return None
     except requests.exceptions.HTTPError as e:
         logger.debug("Server error attempting to call container: ",
-                      container_name)
+                     container_name)
         raise create_api_error_from_http_exception(e)
+
 
 def getContainerName(job):
     """Create a random string including the job name, and return it."""
     return '--'.join([str(job),
-                      base64.b64encode(os.urandom(9), '-_')])\
-                      .replace("'", '').replace('"', '').replace('_', '')
+                      base64.b64encode(os.urandom(9), '-_')]) \
+        .replace("'", '').replace('"', '').replace('_', '')
 
 
 def _dockerKill(containerName, action):
@@ -429,16 +436,16 @@ def _dockerKill(containerName, action):
         # container was run with --rm and has already exited before this call.
         logger.info('The container with name "%s" appears to have already been '
                     'removed.  Nothing to '
-                  'do.', containerName)
+                    'do.', containerName)
     else:
         if action in (None, FORGO):
             logger.info('The container with name %s continues to exist as we '
                         'were asked to forgo a '
-                      'post-job action on it.', containerName)
+                        'post-job action on it.', containerName)
         else:
             logger.info('The container with name %s exists. Running '
                         'user-specified defer functions.',
-                         containerName)
+                        containerName)
             if running and action >= STOP:
                 logger.info('Stopping container "%s".', containerName)
                 for attempt in retry(predicate=dockerPredicate):
@@ -461,7 +468,8 @@ def _dockerKill(containerName, action):
                 else:
                     logger.info('Container "%s" was not found on the system.'
                                 'Nothing to remove.',
-                                 containerName)
+                                containerName)
+
 
 def _fixPermissions(tool, workDir):
     """

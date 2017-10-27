@@ -19,14 +19,14 @@ from builtins import object
 import sys
 
 if sys.version_info >= (3, 0):
-
     # https://docs.python.org/3.0/whatsnew/3.0.html#ordering-comparisons
     def cmp(a, b):
         return (a > b) - (a < b)
 
+
 class MemoryString(object):
     def __init__(self, string):
-        if string[-1] == 'K' or string[-1] == 'M' or string[-1] == 'G' or string[-1] == 'T': #10K
+        if string[-1] == 'K' or string[-1] == 'M' or string[-1] == 'G' or string[-1] == 'T':  # 10K
             self.unit = string[-1]
             self.val = float(string[:-1])
         elif len(string) >= 3 and (string[-2] == 'k' or string[-2] == 'M' or string[-2] == 'G' or string[-2] == 'T'):

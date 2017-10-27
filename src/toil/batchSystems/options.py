@@ -18,6 +18,7 @@ from .registry import batchSystemFactoryFor, defaultBatchSystem, uniqueNames
 import socket
 from contextlib import closing
 
+
 def getPublicIP():
     """Get the IP that this machine uses to contact the internet.
 
@@ -38,10 +39,11 @@ def getPublicIP():
         # to provide a default argument
         return '127.0.0.1'
 
+
 def _parasolOptions(addOptionFn):
     addOptionFn("--parasolCommand", dest="parasolCommand", default=None,
-                      help="The name or path of the parasol program. Will be looked up on PATH "
-                           "unless it starts with a slashdefault=%s" % 'parasol')
+                help="The name or path of the parasol program. Will be looked up on PATH "
+                     "unless it starts with a slashdefault=%s" % 'parasol')
     addOptionFn("--parasolMaxBatches", dest="parasolMaxBatches", default=None,
                 help="Maximum number of job batches the Parasol batch is allowed to create. One "
                      "batch is created for jobs with a a unique set of resource requirements. "
@@ -62,12 +64,13 @@ def _mesosOptions(addOptionFn):
     addOptionFn("--mesosMaster", dest="mesosMasterAddress", default=getPublicIP() + ':5050',
                 help=("The host and port of the Mesos master separated by colon. (default: %(default)s)"))
 
+
 # Built in batch systems that have options
 _OPTIONS = [
     _parasolOptions,
     _singleMachineOptions,
     _mesosOptions
-    ]
+]
 
 _options = list(_OPTIONS)
 
@@ -97,6 +100,7 @@ def addOptions(addOptionFn):
     for o in _options:
         o(addOptionFn)
 
+
 def setDefaultOptions(config):
     """
     Set default options for builtin batch systems. This is required if a Config
@@ -105,7 +109,7 @@ def setDefaultOptions(config):
     config.batchSystem = "singleMachine"
     config.disableHotDeployment = False
     config.environment = {}
-    config.statePollingWait = 1 # seconds
+    config.statePollingWait = 1  # seconds
 
     # single machine
     config.scale = 1

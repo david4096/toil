@@ -15,6 +15,7 @@
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import str
 import base64
@@ -46,7 +47,6 @@ GOOGLE_STORAGE = 'gs'
 
 
 class GoogleJobStore(AbstractJobStore):
-
     @classmethod
     def initialize(cls, locator, config=None):
         try:
@@ -80,15 +80,15 @@ class GoogleJobStore(AbstractJobStore):
         #  create 2 buckets
         self.projectID = projectID
 
-        self.bucketName = namePrefix+"--toil"
+        self.bucketName = namePrefix + "--toil"
         log.debug("Instantiating google jobStore with name: %s", self.bucketName)
-        self.gsBucketURL = "gs://"+self.bucketName
+        self.gsBucketURL = "gs://" + self.bucketName
 
         self._headerValues = {"x-goog-project-id": bytes(projectID)} if projectID else {}
 
         # Not reading .boto correctly, this works to create bucket after 'pip install gsutils', which updates osauth2
-        #import gcs_oauth2_boto_plugin
-        #gcs_oauth2_boto_plugin.SetFallbackClientIdAndSecret(gs_access_key_id, gs_secret_access_key)
+        # import gcs_oauth2_boto_plugin
+        # gcs_oauth2_boto_plugin.SetFallbackClientIdAndSecret(gs_access_key_id, gs_secret_access_key)
 
         self._encryptedHeaders = self.headerValues
 
@@ -111,7 +111,7 @@ class GoogleJobStore(AbstractJobStore):
 
         self.statsBaseID = 'f16eef0c-b597-4b8b-9b0c-4d605b4f506c'
         self.statsReadPrefix = '_'
-        self.readStatsBaseID = self.statsReadPrefix+self.statsBaseID
+        self.readStatsBaseID = self.statsReadPrefix + self.statsBaseID
 
     def destroy(self):
         # no upper time limit on this call keep trying delete calls until we succeed - we can
@@ -271,7 +271,7 @@ class GoogleJobStore(AbstractJobStore):
     def _getResources(url):
         projectID = url.host
         bucketAndKey = url.path
-        return projectID, 'gs://'+bucketAndKey
+        return projectID, 'gs://' + bucketAndKey
 
     @classmethod
     def getSize(cls, url):
@@ -337,7 +337,7 @@ class GoogleJobStore(AbstractJobStore):
                 if lastTry:
                     # this was our second try, we are reasonably sure there aren't any stats
                     # left to gather
-                        break
+                    break
                 # Try one more time in a couple seconds
                 time.sleep(5)
                 lastTry = True
@@ -365,11 +365,11 @@ class GoogleJobStore(AbstractJobStore):
     @staticmethod
     def _newID(isFile=False, jobStoreID=None):
         if isFile and jobStoreID:  # file associated with job
-            return jobStoreID+str(uuid.uuid4())
+            return jobStoreID + str(uuid.uuid4())
         elif isFile:  # nonassociated file
             return str(uuid.uuid4())
         else:  # job id
-            return "job"+str(uuid.uuid4())
+            return "job" + str(uuid.uuid4())
 
     def _resolveEncryptionHeaders(self):
         sseKeyPath = self.sseKeyPath

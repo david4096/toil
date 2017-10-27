@@ -15,6 +15,7 @@
 from __future__ import absolute_import, print_function
 
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import zip
 from builtins import map
@@ -55,7 +56,7 @@ from toil.lib.bioio import (setLoggingFromOptions,
 from toil.resource import ModuleDescriptor
 from future.utils import with_metaclass
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
 
 
 class JobLikeObject(object):
@@ -64,6 +65,7 @@ class JobLikeObject(object):
     If the object doesn't specify explicit requirements, these properties will fall back
     to the configured defaults. If the value cannot be determined, an AttributeError is raised.
     """
+
     def __init__(self, requirements, unitName, jobName=None):
         cores = requirements.get('cores')
         memory = requirements.get('memory')
@@ -196,6 +198,7 @@ class JobNode(JobLikeObject):
     """
     This object bridges the job graph, job, and batchsystem classes
     """
+
     def __init__(self, requirements, jobName, unitName, jobStoreID,
                  command, predecessorNumber=1):
         super(JobNode, self).__init__(requirements=requirements, unitName=unitName, jobName=jobName)
@@ -255,10 +258,12 @@ class JobNode(JobLikeObject):
                    unitName=job.unitName,
                    predecessorNumber=predecessorNumber)
 
+
 class Job(JobLikeObject):
     """
     Class represents a unit of work in toil.
     """
+
     def __init__(self, memory=None, cores=None, disk=None, preemptable=None, unitName=None,
                  checkpoint=False):
         """
@@ -282,16 +287,16 @@ class Job(JobLikeObject):
                         'preemptable': preemptable}
         super(Job, self).__init__(requirements=requirements, unitName=unitName)
         self.checkpoint = checkpoint
-        #Private class variables
+        # Private class variables
 
-        #See Job.addChild
+        # See Job.addChild
         self._children = []
-        #See Job.addFollowOn
+        # See Job.addFollowOn
         self._followOns = []
-        #See Job.addService
+        # See Job.addService
         self._services = []
-        #A follow-on, service or child of a job A, is a "direct successor" of A; if B
-        #is a direct successor of A, then A is a "direct predecessor" of B.
+        # A follow-on, service or child of a job A, is a "direct successor" of A; if B
+        # is a direct successor of A, then A is a "direct predecessor" of B.
         self._directPredecessors = set()
         # Note that self.__module__ is not necessarily this module, i.e. job.py. It is the module
         # defining the class self is an instance of, which may be a subclass of Job that may be
@@ -382,6 +387,7 @@ class Job(JobLikeObject):
                     if jS.service == parentService or check(jS.service._childServices):
                         return True
                 return False
+
             if not check(self._services):
                 raise JobException("Parent service is not a service of the given job")
             return parentService._addChild(service)
@@ -502,8 +508,8 @@ class Job(JobLikeObject):
         return EncapsulatedJob(self)
 
     ####################################################
-    #The following function is used for passing return values between
-    #job run functions
+    # The following function is used for passing return values between
+    # job run functions
     ####################################################
 
     def rv(self, *path):
@@ -554,7 +560,7 @@ class Job(JobLikeObject):
         self._promiseJobStore = jobStore
 
     ####################################################
-    #Cycle/connectivity checking
+    # Cycle/connectivity checking
     ####################################################
 
     def checkJobGraphForDeadlocks(self):
@@ -580,17 +586,19 @@ class Job(JobLikeObject):
         """
         roots = set()
         visited = set()
-        #Function to get the roots of a job
+
+        # Function to get the roots of a job
         def getRoots(job):
             if job not in visited:
                 visited.add(job)
                 if len(job._directPredecessors) > 0:
-                    list(map(lambda p : getRoots(p), job._directPredecessors))
+                    list(map(lambda p: getRoots(p), job._directPredecessors))
                 else:
                     roots.add(job)
-                #The following call ensures we explore all successor edges.
-                list(map(lambda c : getRoots(c), job._children +
-                    job._followOns))
+                # The following call ensures we explore all successor edges.
+                list(map(lambda c: getRoots(c), job._children +
+                         job._followOns))
+
         getRoots(self)
         return roots
 
@@ -623,15 +631,15 @@ class Job(JobLikeObject):
         For a job graph G = (V, E) the algorithm is ``O(|V|^2)``. It is ``O(|V| + |E|)`` for \
         a graph with no follow-ons. The former follow-on case could be improved!
         """
-        #Get the root jobs
+        # Get the root jobs
         roots = self.getRootJobs()
         if len(roots) == 0:
             raise JobGraphDeadlockException("Graph contains no root jobs due to cycles")
 
-        #Get implied edges
+        # Get implied edges
         extraEdges = self._getImpliedEdges(roots)
 
-        #Check for directed cycles in the augmented graph
+        # Check for directed cycles in the augmented graph
         visited = set()
         for root in roots:
             root._checkJobGraphAcylicDFS([], visited, extraEdges)
@@ -650,15 +658,15 @@ class Job(JobLikeObject):
         :raises toil.job.JobGraphDeadlockException: if there exists a job being added to the graph for which \
         checkpoint=True and which is not a leaf.
         """
-        roots = self.getRootJobs() # Roots jobs of component, these are preexisting jobs in the graph
+        roots = self.getRootJobs()  # Roots jobs of component, these are preexisting jobs in the graph
 
         # All jobs in the component of the job graph containing self
         jobs = set()
-        list(map(lambda x : x._dfs(jobs), roots))
+        list(map(lambda x: x._dfs(jobs), roots))
 
         # Check for each job for which checkpoint is true that it is a cut vertex or leaf
         for y in [x for x in jobs if x.checkpoint]:
-            if y not in roots: # The roots are the prexisting jobs
+            if y not in roots:  # The roots are the prexisting jobs
                 if not Job._isLeafVertex(y):
                     raise JobGraphDeadlockException("New checkpoint job %s is not a leaf in the job graph" % y)
 
@@ -688,17 +696,17 @@ class Job(JobLikeObject):
                                              'job while that job is running.')
         self._fileStore._registerDeferredFunction(DeferredFunction.create(function, *args, **kwargs))
 
-
     ####################################################
-    #The following nested classes are used for
-    #creating jobtrees (Job.Runner),
-    #and defining a service (Job.Service)
+    # The following nested classes are used for
+    # creating jobtrees (Job.Runner),
+    # and defining a service (Job.Service)
     ####################################################
 
     class Runner(object):
         """
         Used to setup and run Toil workflow.
         """
+
         @staticmethod
         def getDefaultArgumentParser():
             """
@@ -758,6 +766,7 @@ class Job(JobLikeObject):
         """
         Abstract class used to define the interface to a service.
         """
+
         def __init__(self, memory=None, cores=None, disk=None, preemptable=None, unitName=None):
             """
             Memory, core and disk requirements are specified identically to as in \
@@ -825,7 +834,7 @@ class Job(JobLikeObject):
             return jobService.rv()
 
     ####################################################
-    #Private functions
+    # Private functions
     ####################################################
 
     def _addPredecessor(self, predecessorJob):
@@ -881,7 +890,6 @@ class Job(JobLikeObject):
             openFileStream = jobStore.readFileStream(pickleFile)
         with openFileStream as fileHandle:
             return cls._unpickle(userModule, fileHandle, jobStore.config)
-
 
     @classmethod
     def _unpickle(cls, userModule, fileHandle, config):
@@ -971,30 +979,30 @@ class Job(JobLikeObject):
         """
         Gets the set of implied edges. See Job.checkJobGraphAcylic
         """
-        #Get nodes in job graph
+        # Get nodes in job graph
         nodes = set()
         for root in roots:
             root._dfs(nodes)
 
         ##For each follow-on edge calculate the extra implied edges
-        #Adjacency list of implied edges, i.e. map of jobs to lists of jobs
-        #connected by an implied edge
+        # Adjacency list of implied edges, i.e. map of jobs to lists of jobs
+        # connected by an implied edge
         extraEdges = dict([(n, []) for n in nodes])
         for job in nodes:
             if len(job._followOns) > 0:
-                #Get set of jobs connected by a directed path to job, starting
-                #with a child edge
+                # Get set of jobs connected by a directed path to job, starting
+                # with a child edge
                 reacheable = set()
                 for child in job._children:
                     child._dfs(reacheable)
-                #Now add extra edges
+                # Now add extra edges
                 for descendant in reacheable:
                     extraEdges[descendant] += job._followOns[:]
         return extraEdges
 
     ####################################################
-    #The following functions are used to serialise
-    #a job graph to the jobStore
+    # The following functions are used to serialise
+    # a job graph to the jobStore
     ####################################################
 
     def _createEmptyJobGraphForJob(self, jobStore, command=None, predecessorNumber=0):
@@ -1010,28 +1018,28 @@ class Job(JobLikeObject):
         """
         Creates a jobGraph for each job in the job graph, recursively.
         """
-        jobsToJobGraphs = {self:jobGraph}
+        jobsToJobGraphs = {self: jobGraph}
         for successors in (self._followOns, self._children):
             jobs = [successor._makeJobGraphs2(jobStore, jobsToJobGraphs) for successor in successors]
             jobGraph.stack.append(jobs)
         return jobsToJobGraphs
 
     def _makeJobGraphs2(self, jobStore, jobsToJobGraphs):
-        #Make the jobGraph for the job, if necessary
+        # Make the jobGraph for the job, if necessary
         if self not in jobsToJobGraphs:
             jobGraph = self._createEmptyJobGraphForJob(jobStore, predecessorNumber=len(self._directPredecessors))
             jobsToJobGraphs[self] = jobGraph
-            #Add followOns/children to be run after the current job.
+            # Add followOns/children to be run after the current job.
             for successors in (self._followOns, self._children):
                 jobs = [successor._makeJobGraphs2(jobStore, jobsToJobGraphs) for successor in successors]
                 jobGraph.stack.append(jobs)
         else:
             jobGraph = jobsToJobGraphs[self]
-        #The return is a tuple stored within a job.stack
-        #The tuple is jobStoreID, memory, cores, disk,
-        #The predecessorID is used to establish which predecessors have been
-        #completed before running the given Job - it is just a unique ID
-        #per predecessor
+        # The return is a tuple stored within a job.stack
+        # The tuple is jobStoreID, memory, cores, disk,
+        # The predecessorID is used to establish which predecessors have been
+        # completed before running the given Job - it is just a unique ID
+        # per predecessor
         return JobNode.fromJobGraph(jobGraph)
 
     def getTopologicalOrderingOfJobs(self):
@@ -1042,9 +1050,10 @@ class Job(JobLikeObject):
         """
         ordering = []
         visited = set()
+
         def getRunOrder(job):
-            #Do not add the job to the ordering until all its predecessors have been
-            #added to the ordering
+            # Do not add the job to the ordering until all its predecessors have been
+            # added to the ordering
             for p in job._directPredecessors:
                 if p not in visited:
                     return
@@ -1052,6 +1061,7 @@ class Job(JobLikeObject):
                 visited.add(job)
                 ordering.append(job)
                 list(map(getRunOrder, job._children + job._followOns))
+
         getRunOrder(self)
         return ordering
 
@@ -1078,13 +1088,14 @@ class Job(JobLikeObject):
         # filter_main() in _unpickle( ) do its job of resolving any user-defined type or function.
         userScript = self.getUserScript().globalize()
         jobsToJobGraphs[self].command = ' '.join(('_toil', fileStoreID) + userScript.toCommand())
-        #Update the status of the jobGraph on disk
+        # Update the status of the jobGraph on disk
         jobStore.update(jobsToJobGraphs[self])
 
     def _serialiseServices(self, jobStore, jobGraph, rootJobGraph):
         """
         Serialises the services for a job.
         """
+
         def processService(serviceJob, depth):
             # Extend the depth of the services if necessary
             if depth == len(jobGraph.services):
@@ -1092,7 +1103,7 @@ class Job(JobLikeObject):
 
             # Recursively call to process child services
             for childServiceJob in serviceJob.service._childServices:
-                processService(childServiceJob, depth+1)
+                processService(childServiceJob, depth + 1)
 
             # Make a job wrapper
             serviceJobGraph = serviceJob._createEmptyJobGraphForJob(jobStore, predecessorNumber=1)
@@ -1120,21 +1131,21 @@ class Job(JobLikeObject):
             jobGraph.services[depth].append(j)
 
             # Break the links between the services to stop them being serialised together
-            #childServices = serviceJob.service._childServices
+            # childServices = serviceJob.service._childServices
             serviceJob.service._childServices = None
             assert serviceJob._services == []
-            #service = serviceJob.service
+            # service = serviceJob.service
 
             # Pickle the job
             serviceJob.pickledService = pickle.dumps(serviceJob.service, protocol=pickle.HIGHEST_PROTOCOL)
             serviceJob.service = None
 
             # Serialise the service job and job wrapper
-            serviceJob._serialiseJob(jobStore, { serviceJob:serviceJobGraph }, rootJobGraph)
+            serviceJob._serialiseJob(jobStore, {serviceJob: serviceJobGraph}, rootJobGraph)
 
             # Restore values
-            #serviceJob.service = service
-            #serviceJob.service._childServices = childServices
+            # serviceJob.service = service
+            # serviceJob.service._childServices = childServices
 
         for serviceJob in self._services:
             processService(serviceJob, 0)
@@ -1147,15 +1158,15 @@ class Job(JobLikeObject):
         until the jobGraph itself is written to disk, this is not performed by this \
         function because of the need to coordinate this operation with other updates. \
         """
-        #Check if the job graph has created
-        #any cycles of dependencies or has multiple roots
+        # Check if the job graph has created
+        # any cycles of dependencies or has multiple roots
         self.checkJobGraphForDeadlocks()
 
-        #Create the jobGraphs for followOns/children
+        # Create the jobGraphs for followOns/children
         with jobStore.batch():
             jobsToJobGraphs = self._makeJobGraphs(jobGraph, jobStore)
-        #Get an ordering on the jobs which we use for pickling the jobs in the
-        #correct order to ensure the promises are properly established
+        # Get an ordering on the jobs which we use for pickling the jobs in the
+        # correct order to ensure the promises are properly established
         ordering = self.getTopologicalOrderingOfJobs()
         assert len(ordering) == len(jobsToJobGraphs)
 
@@ -1163,28 +1174,30 @@ class Job(JobLikeObject):
             # Temporarily set the jobStore locators for the promise call back functions
             for job in ordering:
                 job.prepareForPromiseRegistration(jobStore)
+
                 def setForServices(serviceJob):
                     serviceJob.prepareForPromiseRegistration(jobStore)
                     for childServiceJob in serviceJob.service._childServices:
                         setForServices(childServiceJob)
+
                 for serviceJob in job._services:
                     setForServices(serviceJob)
 
             ordering.reverse()
             assert self == ordering[-1]
             if firstJob:
-                #If the first job we serialise all the jobs, including the root job
+                # If the first job we serialise all the jobs, including the root job
                 for job in ordering:
                     # Pickle the services for the job
                     job._serialiseServices(jobStore, jobsToJobGraphs[job], jobGraph)
                     # Now pickle the job
                     job._serialiseJob(jobStore, jobsToJobGraphs, jobGraph)
             else:
-                #We store the return values at this point, because if a return value
-                #is a promise from another job, we need to register the promise
-                #before we serialise the other jobs
+                # We store the return values at this point, because if a return value
+                # is a promise from another job, we need to register the promise
+                # before we serialise the other jobs
                 self._fulfillPromises(returnValues, jobStore)
-                #Pickle the non-root jobs
+                # Pickle the non-root jobs
                 for job in ordering[:-1]:
                     # Pickle the services for the job
                     job._serialiseServices(jobStore, jobsToJobGraphs[job], jobGraph)
@@ -1221,10 +1234,10 @@ class Job(JobLikeObject):
         Serialise an existing job.
         """
         self._serialiseJobGraph(jobGraph, jobStore, returnValues, False)
-        #Drop the completed command, if not dropped already
+        # Drop the completed command, if not dropped already
         jobGraph.command = None
-        #Merge any children (follow-ons) created in the initial serialisation
-        #with children (follow-ons) created in the subsequent scale-up.
+        # Merge any children (follow-ons) created in the initial serialisation
+        # with children (follow-ons) created in the subsequent scale-up.
         assert len(jobGraph.stack) >= 4
         combinedChildren = jobGraph.stack[-1] + jobGraph.stack[-3]
         combinedFollowOns = jobGraph.stack[-2] + jobGraph.stack[-4]
@@ -1235,9 +1248,9 @@ class Job(JobLikeObject):
             jobGraph.stack.append(combinedChildren)
 
     ####################################################
-    #Function which worker calls to ultimately invoke
-    #a jobs Job.run method, and then handle created
-    #children/followOn jobs
+    # Function which worker calls to ultimately invoke
+    # a jobs Job.run method, and then handle created
+    # children/followOn jobs
     ####################################################
 
     def _run(self, jobGraph, fileStore):
@@ -1307,27 +1320,30 @@ class Job(JobLikeObject):
         return self.__class__.__name__
 
 
-class JobException( Exception ):
+class JobException(Exception):
     """
     General job exception.
     """
-    def __init__( self, message ):
-        super( JobException, self ).__init__( message )
+
+    def __init__(self, message):
+        super(JobException, self).__init__(message)
 
 
-class JobGraphDeadlockException( JobException ):
+class JobGraphDeadlockException(JobException):
     """
     An exception raised in the event that a workflow contains an unresolvable \
     dependency, such as a cycle. See :func:`toil.job.Job.checkJobGraphForDeadlocks`.
     """
-    def __init__( self, string ):
-        super( JobGraphDeadlockException, self ).__init__( string )
+
+    def __init__(self, string):
+        super(JobGraphDeadlockException, self).__init__(string)
 
 
 class FunctionWrappingJob(Job):
     """
     Job used to wrap a function. In its `run` method the wrapped function is called.
     """
+
     def __init__(self, userFunction, *args, **kwargs):
         """
         :param callable userFunction: The function to wrap. It will be called with ``*args`` and
@@ -1384,15 +1400,15 @@ class FunctionWrappingJob(Job):
         userFunctionModule = self._loadUserModule(self.userFunctionModule)
         return getattr(userFunctionModule, self.userFunctionName)
 
-    def run(self,fileStore):
-        userFunction = self._getUserFunction( )
+    def run(self, fileStore):
+        userFunction = self._getUserFunction()
         return userFunction(*self._args, **self._kwargs)
 
     def getUserScript(self):
         return self.userFunctionModule
 
     def _jobName(self):
-        return ".".join((self.__class__.__name__,self.userFunctionModule.name,self.userFunctionName))
+        return ".".join((self.__class__.__name__, self.userFunctionModule.name, self.userFunctionName))
 
 
 class JobFunctionWrappingJob(FunctionWrappingJob):
@@ -1435,6 +1451,7 @@ class PromisedRequirementFunctionWrappingJob(FunctionWrappingJob):
     Spawns child function using parent function parameters and fulfilled promised
     resource requirements.
     """
+
     def __init__(self, userFunction, *args, **kwargs):
         self._promisedKwargs = kwargs.copy()
         # Replace resource requirements in intermediate job with small values.
@@ -1505,6 +1522,7 @@ class EncapsulatedJob(Job):
     is the return value of the root job, e.g. A().encapsulate().rv() and A().rv() will resolve to
     the same value after A or A.encapsulate() has been run.
     """
+
     def __init__(self, job):
         """
         :param toil.job.Job job: the job to encapsulate.
@@ -1560,6 +1578,7 @@ class ServiceJob(Job):
     """
     Job used to wrap a :class:`toil.job.Job.Service` instance.
     """
+
     def __init__(self, service):
         """
         This constructor should not be called by a user.
@@ -1571,7 +1590,7 @@ class ServiceJob(Job):
         # service.__module__ is the module defining the class service is an instance of.
         self.serviceModule = ModuleDescriptor.forModule(service.__module__).globalize()
 
-        #The service to run - this will be replace before serialization with a pickled version
+        # The service to run - this will be replace before serialization with a pickled version
         self.service = service
         self.pickledService = None
         self.jobName = service.jobName
@@ -1587,26 +1606,26 @@ class ServiceJob(Job):
         # Unpickle the service
         logger.debug('Loading service module %s.', self.serviceModule)
         userModule = self._loadUserModule(self.serviceModule)
-        service = self._unpickle( userModule, BytesIO( self.pickledService ), fileStore.jobStore.config )
-        #Start the service
+        service = self._unpickle(userModule, BytesIO(self.pickledService), fileStore.jobStore.config)
+        # Start the service
         startCredentials = service.start(self)
         try:
-            #The start credentials  must be communicated to processes connecting to
-            #the service, to do this while the run method is running we
-            #cheat and set the return value promise within the run method
+            # The start credentials  must be communicated to processes connecting to
+            # the service, to do this while the run method is running we
+            # cheat and set the return value promise within the run method
             self._fulfillPromises(startCredentials, fileStore.jobStore)
             self._rvs = {}  # Set this to avoid the return values being updated after the
-            #run method has completed!
+            # run method has completed!
 
-            #Now flag that the service is running jobs can connect to it
+            # Now flag that the service is running jobs can connect to it
             logger.debug("Removing the start jobStoreID to indicate that establishment of the service")
             assert self.jobGraph.startJobStoreID != None
             if fileStore.jobStore.fileExists(self.jobGraph.startJobStoreID):
                 fileStore.jobStore.deleteFile(self.jobGraph.startJobStoreID)
             assert not fileStore.jobStore.fileExists(self.jobGraph.startJobStoreID)
 
-            #Now block until we are told to stop, which is indicated by the removal
-            #of a file
+            # Now block until we are told to stop, which is indicated by the removal
+            # of a file
             assert self.jobGraph.terminateJobStoreID != None
             while True:
                 # Check for the terminate signal
@@ -1625,7 +1644,7 @@ class ServiceJob(Job):
                     logger.debug("Detected termination of the service")
                     raise
 
-                time.sleep(fileStore.jobStore.config.servicePollingInterval) #Avoid excessive polling
+                time.sleep(fileStore.jobStore.config.servicePollingInterval)  # Avoid excessive polling
 
             # Remove link to the jobGraph
             self.jobGraph = None
@@ -1638,7 +1657,7 @@ class ServiceJob(Job):
     def _run(self, jobGraph, fileStore):
         # Set the jobGraph for the job
         self.jobGraph = jobGraph
-        #Run the job
+        # Run the job
         returnValues = self.run(fileStore)
         assert jobGraph.stack == []
         assert jobGraph.services == []
@@ -1676,6 +1695,7 @@ class Promise(object):
     """
     A set of IDs of files containing promised values when we know we won't need them anymore
     """
+
     def __init__(self, job, path):
         """
         :param Job job: the job whose return value this promise references
@@ -1787,6 +1807,7 @@ class PromisedRequirement(object):
 class UnfulfilledPromiseSentinel(object):
     """This should be overwritten by a proper promised value. Throws an
     exception when unpickled."""
+
     def __init__(self, fulfillingJobName, unpickled):
         self.fulfillingJobName = fulfillingJobName
 

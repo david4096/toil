@@ -18,6 +18,7 @@ Implements a real-time UDP-based logging system that user scripts can use for de
 
 from __future__ import absolute_import
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import object
 import os
@@ -137,8 +138,8 @@ class RealtimeLogger(with_metaclass(RealtimeLoggerMetaclass, object)):
                     log.info('Starting real-time logging.')
                     # Start up the logging server
                     cls.loggingServer = SocketServer.ThreadingUDPServer(
-                            server_address=('0.0.0.0', 0),
-                            RequestHandlerClass=LoggingDatagramHandler)
+                        server_address=('0.0.0.0', 0),
+                        RequestHandlerClass=LoggingDatagramHandler)
 
                     # Set up a thread to do all the serving in the background and exit when we do
                     cls.serverThread = threading.Thread(target=cls.loggingServer.serve_forever)

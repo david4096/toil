@@ -26,7 +26,6 @@ import os
 import shutil
 import signal
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -35,6 +34,7 @@ class RestartDAGTest(ToilTest):
     Tests that restarted job DAGs don't run children of jobs that failed in the first run till the
     parent completes successfully in the restart.
     """
+
     def setUp(self):
         super(RestartDAGTest, self).setUp()
         self.tempDir = self._createTempDir(purpose='tempDir')
@@ -130,6 +130,7 @@ class RestartDAGTest(ToilTest):
             self.fail('Test failed for (%s) reasons:\n\t%s' % (len(failReasons),
                                                                '\n\t'.join(failReasons)))
 
+
 def passingFn(job, fileName=None):
     """
     This function is guaranteed to pass as it does nothing out of the ordinary.  If fileName is
@@ -140,6 +141,7 @@ def passingFn(job, fileName=None):
     if fileName is not None:
         # Emulates system touch.
         open(fileName, 'w').close()
+
 
 def failingFn(job, failType, fileName):
     """

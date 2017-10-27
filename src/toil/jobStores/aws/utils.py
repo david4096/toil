@@ -34,7 +34,6 @@ from multiprocessing import cpu_count
 # Python 3 compatibility imports
 import itertools
 
-
 import boto
 from bd2k.util.exceptions import panic
 from concurrent.futures import ThreadPoolExecutor

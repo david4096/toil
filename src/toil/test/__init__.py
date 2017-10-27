@@ -368,6 +368,7 @@ def needs_gridengine(test_item):
     else:
         return unittest.skip("Install GridEngine to include this test.")(test_item)
 
+
 def needs_torque(test_item):
     """
     Use as a decorator before test classes or methods to only run them if PBS/Torque is installed.
@@ -512,6 +513,7 @@ def integrative(test_item):
             'Set TOIL_TEST_INTEGRATIVE="True" to include this integration test, '
             'or run `make integration_test_local` to run all integration tests.')(test_item)
 
+
 def slow(test_item):
     """
     Use this decorator to identify tests that are slow and not critical.
@@ -523,6 +525,7 @@ def slow(test_item):
     else:
         return unittest.skip(
             'Skipped because TOIL_TEST_QUICK is "True"')(test_item)
+
 
 methodNamePartRegex = re.compile('^[a-zA-Z_0-9]+$')
 
@@ -611,6 +614,7 @@ def make_tests(generalMethod, targetClass, **kwargs):
     False
 
     """
+
     def pop(d):
         """
         Pops an arbitrary key value pair from a given dict.

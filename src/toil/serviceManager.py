@@ -24,45 +24,47 @@ from threading import Thread, Event
 # Python 3 compatibility imports
 from six.moves.queue import Empty, Queue
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
 
-class ServiceManager( object ):
+
+class ServiceManager(object):
     """
     Manages the scheduling of services.
     """
+
     def __init__(self, jobStore, toilState):
         logger.debug("Initializing service manager")
         self.jobStore = jobStore
-        
+
         self.toilState = toilState
 
         self.jobGraphsWithServicesBeingStarted = set()
 
-        self._terminate = Event() # This is used to terminate the thread associated
+        self._terminate = Event()  # This is used to terminate the thread associated
         # with the service manager
 
-        self._jobGraphsWithServicesToStart = Queue() # This is the input queue of
+        self._jobGraphsWithServicesToStart = Queue()  # This is the input queue of
         # jobGraphs that have services that need to be started
 
-        self._jobGraphsWithServicesThatHaveStarted = Queue() # This is the output queue
+        self._jobGraphsWithServicesThatHaveStarted = Queue()  # This is the output queue
         # of jobGraphs that have services that are already started
 
-        self._serviceJobGraphsToStart = Queue() # This is the queue of services for the
+        self._serviceJobGraphsToStart = Queue()  # This is the queue of services for the
         # batch system to start
 
-        self.jobsIssuedToServiceManager = 0 # The number of jobs the service manager
+        self.jobsIssuedToServiceManager = 0  # The number of jobs the service manager
         # is scheduling
 
         # Start a thread that starts the services of jobGraphs in the
         # jobsWithServicesToStart input queue and puts the jobGraphs whose services
         # are running on the jobGraphssWithServicesThatHaveStarted output queue
         self._serviceStarter = Thread(target=self._startServices,
-                                     args=(self._jobGraphsWithServicesToStart,
-                                           self._jobGraphsWithServicesThatHaveStarted,
-                                           self._serviceJobGraphsToStart, self._terminate,
-                                           self.jobStore))
-        
-    def start(self): 
+                                      args=(self._jobGraphsWithServicesToStart,
+                                            self._jobGraphsWithServicesThatHaveStarted,
+                                            self._serviceJobGraphsToStart, self._terminate,
+                                            self.jobStore))
+
+    def start(self):
         """
         Start the service scheduling thread.
         """
@@ -80,7 +82,8 @@ class ServiceManager( object ):
         self.jobGraphsWithServicesBeingStarted.add(jobGraph)
 
         # Add number of jobs managed by ServiceManager
-        self.jobsIssuedToServiceManager += sum(map(len, jobGraph.services)) + 1 # The plus one accounts for the root job
+        self.jobsIssuedToServiceManager += sum(
+            map(len, jobGraph.services)) + 1  # The plus one accounts for the root job
 
         # Asynchronously schedule the services
         self._jobGraphsWithServicesToStart.put(jobGraph)
@@ -125,7 +128,7 @@ class ServiceManager( object ):
             if error:
                 self.jobStore.deleteFile(serviceJob.errorJobStoreID)
             self.jobStore.deleteFile(serviceJob.terminateJobStoreID)
-            
+
     def isActive(self, serviceJobNode):
         """
         Returns true if the service job has not been told to terminate.
@@ -181,14 +184,15 @@ class ServiceManager( object ):
                     break
                 continue
 
-            if jobGraph is None: # Nothing was ready, loop again
+            if jobGraph is None:  # Nothing was ready, loop again
                 continue
 
             # Start the service jobs in batches, waiting for each batch
             # to become established before starting the next batch
             for serviceJobList in jobGraph.services:
                 for serviceJob in serviceJobList:
-                    logger.debug("Service manager is starting service job: %s, start ID: %s", serviceJob, serviceJob.startJobStoreID)
+                    logger.debug("Service manager is starting service job: %s, start ID: %s", serviceJob,
+                                 serviceJob.startJobStoreID)
                     assert jobStore.fileExists(serviceJob.startJobStoreID)
                     # At this point the terminateJobStoreID and errorJobStoreID could have been deleted!
                     serviceJobsToStart.put(serviceJob)

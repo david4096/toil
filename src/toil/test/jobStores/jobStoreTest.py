@@ -16,6 +16,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import next
 from builtins import str
@@ -160,9 +161,6 @@ class AbstractJobStoreTest(object):
             self.assertEquals(jobOnMaster.predecessorNumber, 0)
             self.assertEquals(jobOnMaster.predecessorsFinished, set())
             self.assertEquals(jobOnMaster.logJobStoreFileID, None)
-
-            
-
 
             # Create a second instance of the job store, simulating a worker ...
             #
@@ -376,9 +374,9 @@ class AbstractJobStoreTest(object):
             with master.batch():
                 for i in range(100):
                     overlargeJobNodeOnMaster = JobNode(command='master-overlarge',
-                                        requirements=masterRequirements,
-                                        jobName='test-overlarge', unitName='onMaster',
-                                        jobStoreID=None, predecessorNumber=0)
+                                                       requirements=masterRequirements,
+                                                       jobName='test-overlarge', unitName='onMaster',
+                                                       jobStoreID=None, predecessorNumber=0)
                     jobGraphs.append(master.create(overlargeJobNodeOnMaster))
             for jobGraph in jobGraphs:
                 self.assertTrue(master.exists(jobGraph.jobStoreID))
@@ -522,7 +520,7 @@ class AbstractJobStoreTest(object):
                 http.server_close()
 
         def testImportFtpFile(self):
-            file = {'name':'foo', 'content':'foo bar baz qux'}
+            file = {'name': 'foo', 'content': 'foo bar baz qux'}
             ftp = FTPStubServer(0)
             ftp.run()
             try:
@@ -754,7 +752,7 @@ class AbstractJobStoreTest(object):
                 f.write('a' * 300000)
             with self.master.readFileStream(fileID) as f:
                 self.assertEquals(f.read(1), "a")
-            # If it times out here, there's a deadlock
+                # If it times out here, there's a deadlock
 
         @abstractmethod
         def _corruptJobStore(self):
@@ -933,13 +931,12 @@ class GoogleJobStoreTest(AbstractJobStoreTest.Test):
 
 @needs_aws
 class AWSJobStoreTest(AbstractJobStoreTest.Test):
-
     def _createJobStore(self):
         from toil.jobStores.aws.jobStore import AWSJobStore
         partSize = self._partSize()
         for encrypted in (True, False):
             self.assertTrue(AWSJobStore.FileInfo.maxInlinedSize(encrypted) < partSize)
-        return AWSJobStore(self.awsRegion()+ ':' + self.namePrefix, partSize=partSize)
+        return AWSJobStore(self.awsRegion() + ':' + self.namePrefix, partSize=partSize)
 
     def _corruptJobStore(self):
         from toil.jobStores.aws.jobStore import AWSJobStore
@@ -965,7 +962,7 @@ class AWSJobStoreTest(AbstractJobStoreTest.Test):
             testJobStoreUUID = str(uuid.uuid4())
             # Create the nucket at the external region
             s3 = S3Connection()
-            for attempt in retry_s3(delays=(2,5,10,30,60), timeout=600):
+            for attempt in retry_s3(delays=(2, 5, 10, 30, 60), timeout=600):
                 with attempt:
                     bucket = s3.create_bucket('domain-test-' + testJobStoreUUID + '--files',
                                               location=externalAWSLocation)
@@ -1044,15 +1041,16 @@ class AWSJobStoreTest(AbstractJobStoreTest.Test):
                 self.assertEquals(e.message, 'Failed to copy at least %d part(s)' % (old_div(num_parts, 2)))
             else:
                 self.fail('Expected a RuntimeError to be raised')
+
     def testOverlargeJob(self):
         master = self.master
         masterRequirements = dict(memory=12, cores=34, disk=35, preemptable=True)
         overlargeJobNodeOnMaster = JobNode(command='master-overlarge',
-                                    requirements=masterRequirements,
-                                    jobName='test-overlarge', unitName='onMaster',
-                                    jobStoreID=None, predecessorNumber=0)
+                                           requirements=masterRequirements,
+                                           jobName='test-overlarge', unitName='onMaster',
+                                           jobStoreID=None, predecessorNumber=0)
 
-        #Make the pickled size of the job larger than 256K
+        # Make the pickled size of the job larger than 256K
         with open("/dev/urandom", "r") as random:
             overlargeJobNodeOnMaster.jobName = random.read(512 * 1024)
         overlargeJobOnMaster = master.create(overlargeJobNodeOnMaster)
@@ -1145,7 +1143,7 @@ class AzureJobStoreTest(AbstractJobStoreTest.Test):
         from toil.jobStores.azureJobStore import maxAzureTablePropertySize
         command = os.urandom(maxAzureTablePropertySize * 2)
         jobNode1 = self.arbitraryJob
-        jobNode1.command=command
+        jobNode1.command = command
         job1 = self.master.create(jobNode1)
         self.assertEqual(job1.command, command)
         job2 = self.master.load(job1.jobStoreID)
@@ -1235,6 +1233,7 @@ class EncryptedAzureJobStoreTest(AzureJobStoreTest, AbstractEncryptedJobStoreTes
 
 class StubHttpRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     fileContents = 'A good programmer looks both ways before crossing a one-way street'
+
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-type", "text/plain")

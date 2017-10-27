@@ -22,7 +22,8 @@ from toil.lib.bioio import parseBasicOptions
 from toil.common import Toil, jobStoreLocatorHelp, Config
 from toil.version import version
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
+
 
 def main():
     parser = getBasicOptionParser()

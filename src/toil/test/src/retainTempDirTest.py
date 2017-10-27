@@ -18,10 +18,12 @@ from toil.job import Job
 from toil.leader import FailedJobsException
 from toil.test import ToilTest
 
+
 class CleanWorkDirTest(ToilTest):
     """
     Tests testing :class:toil.fileStore.FileStore
     """
+
     def setUp(self):
         super(CleanWorkDirTest, self).setUp()
         self.testDir = self._createTempDir()
@@ -88,9 +90,11 @@ class CleanWorkDirTest(ToilTest):
         else:
             self.fail("Toil run succeeded unexpectedly")
 
+
 def tempFileTestJob(job):
     with open(job.fileStore.getLocalTempFile(), "w") as f:
         f.write("test file retention")
+
 
 def tempFileTestErrorJob(job):
     with open(job.fileStore.getLocalTempFile(), "w") as f:

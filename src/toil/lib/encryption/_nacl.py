@@ -16,9 +16,9 @@ from builtins import str
 import nacl
 from nacl.secret import SecretBox
 
-
 # 16-byte MAC plus a nonce is added to every message.
 overhead = 16 + SecretBox.NONCE_SIZE
+
 
 def encrypt(message, keyPath):
     """
@@ -54,6 +54,7 @@ def encrypt(message, keyPath):
     nonce = nacl.utils.random(SecretBox.NONCE_SIZE)
     assert len(nonce) == SecretBox.NONCE_SIZE
     return bytes(sb.encrypt(message, nonce))
+
 
 def decrypt(ciphertext, keyPath):
     """

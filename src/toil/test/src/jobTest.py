@@ -34,6 +34,7 @@ from toil.test import ToilTest, slow
 
 logger = logging.getLogger(__name__)
 
+
 class JobTest(ToilTest):
     """
     Tests testing the job class
@@ -43,7 +44,6 @@ class JobTest(ToilTest):
     def setUpClass(cls):
         super(JobTest, cls).setUpClass()
         logging.basicConfig(level=logging.DEBUG)
-
 
     def testResourceRequirements(self):
         """
@@ -201,7 +201,7 @@ class JobTest(ToilTest):
             # Get an adjacency list representation and check is acyclic
             adjacencyList = self.getAdjacencyList(nodeNumber, childEdges)
             self.assertTrue(self.isAcyclic(adjacencyList))
-            
+
             # Add in follow-on edges - these are returned as a list, and as a set of augmented
             # edges in the adjacency list
             # edges in the adjacency list
@@ -224,7 +224,7 @@ class JobTest(ToilTest):
             except JobGraphDeadlockException:
                 pass  # This is the expected behaviour
 
-            def checkChildEdgeCycleDetection(fNode, tNode):                
+            def checkChildEdgeCycleDetection(fNode, tNode):
                 childEdges.add((fNode, tNode))  # Create a cycle
                 adjacencyList[fNode].add(tNode)
                 self.assertTrue(not self.isAcyclic(adjacencyList))
@@ -240,7 +240,7 @@ class JobTest(ToilTest):
                 # Check is now acyclic again
                 self.makeJobGraph(nodeNumber, childEdges,
                                   followOnEdges, None, False).checkJobGraphAcylic()
-                                  
+
             def checkFollowOnEdgeCycleDetection(fNode, tNode):
                 followOnEdges.add((fNode, tNode))  # Create a cycle
                 try:
@@ -260,10 +260,10 @@ class JobTest(ToilTest):
             # Pick a random existing order relationship
             fNode, tNode = self.getRandomEdge(nodeNumber)
             while tNode not in self.reachable(fNode, adjacencyList):
-                fNode, tNode = self.getRandomEdge(nodeNumber)  
-            
-            # Try creating a cycle of child edges
-            checkChildEdgeCycleDetection(tNode, fNode)   
+                fNode, tNode = self.getRandomEdge(nodeNumber)
+
+                # Try creating a cycle of child edges
+            checkChildEdgeCycleDetection(tNode, fNode)
 
             # Try adding a self child edge
             node = random.choice(range(nodeNumber))
@@ -278,7 +278,7 @@ class JobTest(ToilTest):
             # Try adding a follow on edge between two nodes with shared descendants
             fNode, tNode = self.getRandomEdge(nodeNumber)
             if (len(self.reachable(tNode, adjacencyList)
-                        .intersection(self.reachable(fNode, adjacencyList))) > 0
+                            .intersection(self.reachable(fNode, adjacencyList))) > 0
                 and (fNode, tNode) not in childEdges and (fNode, tNode) not in followOnEdges):
                 checkFollowOnEdgeCycleDetection(fNode, tNode)
 
@@ -427,7 +427,7 @@ class JobTest(ToilTest):
                 numberOfFailedJobs = 0
             except FailedJobsException as e:
                 numberOfFailedJobs = e.numberOfFailedJobs
-            
+
             # Restart until successful or failed
             totalTrys = 1
             options.restart = True
@@ -438,10 +438,10 @@ class JobTest(ToilTest):
                     numberOfFailedJobs = 0
                 except FailedJobsException as e:
                     numberOfFailedJobs = e.numberOfFailedJobs
-                    if totalTrys > 32: #p(fail after this many restarts) ~= 0.5**32
-                        self.fail() #Exceeded a reasonable number of restarts    
+                    if totalTrys > 32:  # p(fail after this many restarts) ~= 0.5**32
+                        self.fail()  # Exceeded a reasonable number of restarts
                     totalTrys += 1
-            
+
             # For each job check it created a valid output file and add the ordering
             # relationships contained within the output file to the ordering relationship,
             # so we can check they are compatible with the relationships defined by the job DAG.
@@ -464,7 +464,7 @@ class JobTest(ToilTest):
     def getRandomEdge(nodeNumber):
         assert nodeNumber > 1
         fNode = random.choice(range(nodeNumber - 1))
-        return fNode, random.choice(range(fNode+1, nodeNumber))
+        return fNode, random.choice(range(fNode + 1, nodeNumber))
 
     @staticmethod
     def makeRandomDAG(nodeNumber):
@@ -523,7 +523,7 @@ class JobTest(ToilTest):
                 # Let node2 be a child of node or a successor of a child of node.
                 # For all node2 the following adds an edge to the augmented 
                 # adjacency list from node2 to each followOn of node
-                
+
                 visited = set()
 
                 def f(node2):
@@ -578,19 +578,19 @@ class JobTest(ToilTest):
         def makeJob(string):
             promises = []
             job = Job.wrapFn(fn2Test, promises, string,
-                             None if outPath is None else os.path.join(outPath, string)) 
+                             None if outPath is None else os.path.join(outPath, string))
             jobsToPromisesMap[job] = promises
             return job
 
         # Make the jobs
         jobs = [makeJob(str(i)) for i in range(nodeNumber)]
-        
+
         # Make the edges
         for fNode, tNode in childEdges:
             jobs[fNode].addChild(jobs[tNode])
         for fNode, tNode in followOnEdges:
             jobs[fNode].addFollowOn(jobs[tNode])
-            
+
         # Map of jobs to return values
         jobsToRvs = dict([(job, job.addService(TrivialService(job.rv())) if addServices else job.rv()) for job in jobs])
 
@@ -633,8 +633,10 @@ class JobTest(ToilTest):
                 return False
         return True
 
+
 def simpleJobFn(job, value):
     job.fileStore.logToMaster(value)
+
 
 def fn1Test(string, outputFile):
     """

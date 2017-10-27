@@ -24,11 +24,13 @@ from toil.test import ToilTest, slow
 from toil.jobStores.abstractJobStore import NoSuchFileException
 from toil.leader import FailedJobsException
 
+
 @slow
 class ResumabilityTest(ToilTest):
     """
     https://github.com/BD2KGenomics/toil/issues/808
     """
+
     def test(self):
         """
         Tests that a toil workflow that fails once can be resumed without a NoSuchJobException.
@@ -56,6 +58,7 @@ class ResumabilityTest(ToilTest):
             # store ID: n/t/jobwbijqL failed with exit value 1"
             self.assertTrue("failed with exit value" not in logString)
 
+
 def parent(job):
     """
     Set up a bunch of dummy child jobs, and a bad job that needs to be
@@ -65,11 +68,13 @@ def parent(job):
         job.addChildJobFn(goodChild)
     job.addFollowOnJobFn(badChild)
 
+
 def goodChild(job):
     """
     Does nothing.
     """
     return
+
 
 def badChild(job):
     """

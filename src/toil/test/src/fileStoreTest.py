@@ -52,6 +52,7 @@ class hidden(object):
     Hiding the abstract test classes from the Unittest loader so it can be inherited in different
     test suites for the different job stores.
     """
+
     class AbstractFileStoreTest(with_metaclass(ABCMeta, ToilTest)):
         """
         An abstract base class for testing the various general functions described in
@@ -752,6 +753,7 @@ class hidden(object):
             """
             # Make this take longer so we can test asynchronous writes across jobs/workers.
             oldHarbingerFileRead = job.fileStore.HarbingerFile.read
+
             def newHarbingerFileRead(self):
                 time.sleep(5)
                 return oldHarbingerFileRead(self)
@@ -965,7 +967,7 @@ class hidden(object):
         def _writeExportGlobalFile(job):
             fileName = os.path.join(job.fileStore.getLocalTempDir(), 'testfile')
             with open(fileName, 'wb') as f:
-                f.write(os.urandom(1024 * 30000)) # 30 Mb
+                f.write(os.urandom(1024 * 30000))  # 30 Mb
             outputFile = os.path.join(job.fileStore.getLocalTempDir(), 'exportedFile')
             job.fileStore.exportFile(job.fileStore.writeGlobalFile(fileName), 'File://' + outputFile)
             assert filecmp.cmp(fileName, outputFile)
@@ -1290,6 +1292,7 @@ class _deleteMethods(object):
 
 class NonCachingFileStoreTestWithFileJobStore(hidden.AbstractNonCachingFileStoreTest):
     jobStoreType = 'file'
+
 
 @pytest.mark.timeout(1000)
 class CachingFileStoreTestWithFileJobStore(hidden.AbstractCachingFileStoreTest):

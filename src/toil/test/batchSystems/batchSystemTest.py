@@ -326,6 +326,7 @@ class hidden(object):
             self.assertTrue(locator.startswith('file:'))
             self.assertEqual(locator[len('file:'):], filePath)
 
+
 @slow
 @needs_mesos
 class MesosBatchSystemTest(hidden.AbstractBatchSystemTest, MesosTestSupport):
@@ -358,16 +359,15 @@ class MesosBatchSystemTest(hidden.AbstractBatchSystemTest, MesosTestSupport):
     def testIgnoreNode(self):
         self.batchSystem.ignoreNode('localhost')
         jobNode = JobNode(command='sleep 1000', jobName='test2', unitName=None,
-                           jobStoreID='1', requirements=defaultRequirements)
+                          jobStoreID='1', requirements=defaultRequirements)
         job = self.batchSystem.issueBatchJob(jobNode)
 
         issuedID = self._waitForJobsToIssue(1)
         self.assertEqual(set(issuedID), {job})
 
         runningJobIDs = self._waitForJobsToStart(1)
-        #Make sure job is NOT running
+        # Make sure job is NOT running
         self.assertEqual(set(runningJobIDs), set({}))
-
 
 
 class SingleMachineBatchSystemTest(hidden.AbstractBatchSystemTest):
@@ -381,6 +381,7 @@ class SingleMachineBatchSystemTest(hidden.AbstractBatchSystemTest):
     def createBatchSystem(self):
         return SingleMachineBatchSystem(config=self.config,
                                         maxCores=numCores, maxMemory=1e9, maxDisk=2001)
+
 
 @slow
 class MaxCoresSingleMachineBatchSystemTest(ToilTest):
@@ -481,7 +482,7 @@ class MaxCoresSingleMachineBatchSystemTest(ToilTest):
                             for i in range(0, int(jobs)):
                                 jobIds.add(bs.issueBatchJob(JobNode(command=self.scriptCommand(),
                                                                     requirements=dict(
-                                                                        cores=float( coresPerJob),
+                                                                        cores=float(coresPerJob),
                                                                         memory=1, disk=1,
                                                                         preemptable=preemptable),
                                                                     jobName=str(i), unitName='', jobStoreID=str(i))))
@@ -504,7 +505,6 @@ class MaxCoresSingleMachineBatchSystemTest(ToilTest):
                         expectedMaxConcurrentTasks = min(old_div(maxCores, coresPerJob), jobs)
                         self.assertEquals(maxConcurrentTasks, expectedMaxConcurrentTasks)
                         resetCounters(self.counterPath)
-
 
     @skipIf(SingleMachineBatchSystem.numCores < 3, 'Need at least three cores to run this test')
     def testServices(self):
@@ -555,6 +555,7 @@ class Service(Job.Service):
     def stop(self, fileStore):
         subprocess.check_call(self.cmd + ' -1', shell=True)
 
+
 @slow
 @needs_parasol
 class ParasolBatchSystemTest(hidden.AbstractBatchSystemTest, ParasolTestSupport):
@@ -574,7 +575,7 @@ class ParasolBatchSystemTest(hidden.AbstractBatchSystemTest, ParasolTestSupport)
     def createBatchSystem(self):
         memory = int(3e9)
         self._startParasol(numCores=numCores, memory=memory)
-        
+
         return ParasolBatchSystem(config=self.config,
                                   maxCores=numCores,
                                   maxMemory=memory,
@@ -651,6 +652,7 @@ class GridEngineBatchSystemTest(hidden.AbstractGridEngineBatchSystemTest):
         for f in glob('toil_job*.o*'):
             os.unlink(f)
 
+
 @slow
 @needs_slurm
 class SlurmBatchSystemTest(hidden.AbstractGridEngineBatchSystemTest):
@@ -670,6 +672,7 @@ class SlurmBatchSystemTest(hidden.AbstractGridEngineBatchSystemTest):
         for f in glob('slurm-*.out'):
             os.unlink(f)
 
+
 @slow
 @needs_torque
 class TorqueBatchSystemTest(hidden.AbstractGridEngineBatchSystemTest):
@@ -686,7 +689,7 @@ class TorqueBatchSystemTest(hidden.AbstractGridEngineBatchSystemTest):
     def createBatchSystem(self):
         from toil.batchSystems.torque import TorqueBatchSystem
         return TorqueBatchSystem(config=self.config, maxCores=numCores, maxMemory=1000e9,
-                                     maxDisk=1e9)
+                                 maxDisk=1e9)
 
     def tearDown(self):
         super(TorqueBatchSystemTest, self).tearDown()
@@ -694,6 +697,7 @@ class TorqueBatchSystemTest(hidden.AbstractGridEngineBatchSystemTest):
         from glob import glob
         for f in glob('toil_job_*.[oe]*'):
             os.unlink(f)
+
 
 class SingleMachineBatchSystemJobTest(hidden.AbstractBatchSystemJobTest):
     """
@@ -725,7 +729,7 @@ class SingleMachineBatchSystemJobTest(hidden.AbstractBatchSystemJobTest):
         # Physically, we're asking for 50% of disk and 50% of disk + 500bytes in the two jobs. The
         # batchsystem should not allow the 2 child jobs to run concurrently.
         root.addChild(Job.wrapFn(measureConcurrency, counterPath, self.sleepTime, cores=1,
-                                    memory='1M', disk=old_div(availableDisk,2)))
+                                 memory='1M', disk=old_div(availableDisk, 2)))
         root.addChild(Job.wrapFn(measureConcurrency, counterPath, self.sleepTime, cores=1,
                                  memory='1M', disk=(old_div(availableDisk, 2)) + 500))
         Job.Runner.startToil(root, options)
@@ -763,15 +767,15 @@ class SingleMachineBatchSystemJobTest(hidden.AbstractBatchSystemJobTest):
 
         # Should block off 50% of memory while waiting for it's 3 cores
         firstJobChild = Job.wrapFn(_resourceBlockTestAuxFn, outFile=outFile, sleepTime=0,
-                                   writeVal='fJC', cores=3, memory=int(old_div(availableMemory,2)), disk='1M')
+                                   writeVal='fJC', cores=3, memory=int(old_div(availableMemory, 2)), disk='1M')
 
         # These two shouldn't be able to run before B because there should be only
         # (50% of memory - 1M) available (firstJobChild should be blocking 50%)
         secondJobChild = Job.wrapFn(_resourceBlockTestAuxFn, outFile=outFile, sleepTime=5,
-                                    writeVal='sJC', cores=2, memory=int(old_div(availableMemory,1.5)),
+                                    writeVal='sJC', cores=2, memory=int(old_div(availableMemory, 1.5)),
                                     disk='1M')
         secondJobGrandChild = Job.wrapFn(_resourceBlockTestAuxFn, outFile=outFile, sleepTime=5,
-                                         writeVal='sJGC', cores=2, memory=int(old_div(availableMemory,1.5)),
+                                         writeVal='sJGC', cores=2, memory=int(old_div(availableMemory, 1.5)),
                                          disk='1M')
 
         root.addChild(blocker)

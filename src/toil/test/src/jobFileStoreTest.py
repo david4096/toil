@@ -24,7 +24,7 @@ from toil.common import Toil
 from toil.job import Job
 from toil.test import ToilTest, slow
 
-PREFIX_LENGTH=200
+PREFIX_LENGTH = 200
 
 
 # TODO: This test is ancient and while similar tests exist in `fileStoreTest.py`, none of them look
@@ -33,6 +33,7 @@ class JobFileStoreTest(ToilTest):
     """
     Tests testing the methods defined in :class:toil.fileStore.FileStore.
     """
+
     def testCachingFileStore(self):
         options = Job.Runner.getDefaultOptions(self._getTestJobStorePath())
         with Toil(options) as workflow:
@@ -68,30 +69,31 @@ class JobFileStoreTest(ToilTest):
         expect.
         """
         for test in range(testNo):
-            #Make a list of random strings, each of 100k chars and hash the first 200 
-            #base prefix to the string
+            # Make a list of random strings, each of 100k chars and hash the first 200
+            # base prefix to the string
             def randomString():
                 chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 s = "".join([random.choice(chars) for i in range(stringLength)])
                 return s[:PREFIX_LENGTH], s
-            #Total length is 2 million characters (20 strings of length 100K each) 
+
+            # Total length is 2 million characters (20 strings of length 100K each)
             testStrings = dict([randomString() for i in range(stringNo)])
             options = Job.Runner.getDefaultOptions(self._getTestJobStorePath())
             options.logLevel = "INFO"
-            options.retryCount=retryCount
-            options.badWorker=badWorker
+            options.retryCount = retryCount
+            options.badWorker = badWorker
             options.badWorkerFailInterval = 1.0
             chainLength = 10
             # Run the workflow, the return value being the number of failed jobs
-            Job.Runner.startToil(Job.wrapJobFn(fileTestJob, [], 
-                                               testStrings, chainLength), 
+            Job.Runner.startToil(Job.wrapJobFn(fileTestJob, [],
+                                               testStrings, chainLength),
                                  options)
-        
+
     def testJobFileStore(self):
         """
         Tests case that about half the files are cached
         """
-        self._testJobFileStore(retryCount=0, badWorker=0.0,  stringNo=5, stringLength=1000000)
+        self._testJobFileStore(retryCount=0, badWorker=0.0, stringNo=5, stringLength=1000000)
 
     @slow
     def testJobFileStoreWithBadWorker(self):
@@ -99,63 +101,63 @@ class JobFileStoreTest(ToilTest):
         Tests case that about half the files are cached and the worker is randomly
         failing.
         """
-        self._testJobFileStore(retryCount=100, badWorker=0.5,  stringNo=5, stringLength=1000000)
+        self._testJobFileStore(retryCount=100, badWorker=0.5, stringNo=5, stringLength=1000000)
 
 
 def fileTestJob(job, inputFileStoreIDs, testStrings, chainLength):
     """
     Test job exercises toil.fileStore.FileStore functions
     """
-    outputFileStoreIds = [] #Strings passed to the next job in the chain
-    
-    #Load the input jobStoreFileIDs and check that they map to the 
-    #same set of random input strings, exercising the different functions in the fileStore interface
+    outputFileStoreIds = []  # Strings passed to the next job in the chain
+
+    # Load the input jobStoreFileIDs and check that they map to the
+    # same set of random input strings, exercising the different functions in the fileStore interface
     for fileStoreID in inputFileStoreIDs:
         if random.random() > 0.5:
-            #Read the file for the fileStoreID, randomly picking a way to invoke readGlobalFile
+            # Read the file for the fileStoreID, randomly picking a way to invoke readGlobalFile
             if random.random() > 0.5:
-                tempFile = job.fileStore.readGlobalFile(fileStoreID, 
+                tempFile = job.fileStore.readGlobalFile(fileStoreID,
                                                         job.fileStore.getLocalTempFileName() if
                                                         random.random() > 0.5 else None,
                                                         cache=random.random() > 0.5)
                 with open(tempFile, 'r') as fH:
                     string = fH.readline()
             else:
-                #Check the local file is as we expect
+                # Check the local file is as we expect
                 with job.fileStore.readGlobalFileStream(fileStoreID) as fH:
                     string = fH.readline()
-                    
-            #Check the string we get back is what we expect
+
+            # Check the string we get back is what we expect
             assert testStrings[string[:PREFIX_LENGTH]] == string
-            
-            #This allows the file to be passed to the next job
+
+            # This allows the file to be passed to the next job
             outputFileStoreIds.append(fileStoreID)
         else:
-            #This tests deletion
+            # This tests deletion
             job.fileStore.deleteGlobalFile(fileStoreID)
-    
-    #Fill out the output strings until we have the same number as the input strings
-    #exercising different ways of writing files to the file store
+
+    # Fill out the output strings until we have the same number as the input strings
+    # exercising different ways of writing files to the file store
     while len(outputFileStoreIds) < len(testStrings):
-        #Pick a string and write it into a file
+        # Pick a string and write it into a file
         testString = random.choice(list(testStrings.values()))
         if random.random() > 0.5:
-            #Make a local copy of the file
+            # Make a local copy of the file
             tempFile = job.fileStore.getLocalTempFile() if random.random() > 0.5 \
-            else os.path.join(job.fileStore.getLocalTempDir(), "temp.txt")
+                else os.path.join(job.fileStore.getLocalTempDir(), "temp.txt")
             with open(tempFile, 'w') as fH:
                 fH.write(testString)
-            #Write a local copy of the file using the local file
+            # Write a local copy of the file using the local file
             outputFileStoreIds.append(job.fileStore.writeGlobalFile(tempFile))
         else:
-            #Use the writeGlobalFileStream method to write the file
+            # Use the writeGlobalFileStream method to write the file
             with job.fileStore.writeGlobalFileStream() as (fH, fileStoreID):
                 fH.write(testString)
                 outputFileStoreIds.append(fileStoreID)
 
     if chainLength > 0:
-        #Make a child that will read these files and check it gets the same results
-        job.addChildJobFn(fileTestJob, outputFileStoreIds, testStrings, chainLength-1)
+        # Make a child that will read these files and check it gets the same results
+        job.addChildJobFn(fileTestJob, outputFileStoreIds, testStrings, chainLength - 1)
 
 
 fileStoreString = "Testing writeGlobalFile"
@@ -178,12 +180,12 @@ def simpleFileStoreJob(job):
 
 def fileStoreChild(job, testID1, testID2):
     with job.fileStore.readGlobalFileStream(testID1) as f:
-        assert(f.read() == fileStoreString)
+        assert (f.read() == fileStoreString)
 
     localFilePath = os.path.join(job.fileStore.getLocalTempDir(), "childTemp.txt")
     job.fileStore.readGlobalFile(testID2, localFilePath)
     with open(localFilePath, 'r') as f:
-        assert(f.read() == streamingFileStoreString)
+        assert (f.read() == streamingFileStoreString)
 
     job.fileStore.deleteLocalFile(testID2)
     try:

@@ -14,6 +14,7 @@
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import object
 from queue import Queue
@@ -38,7 +39,6 @@ TaskData = namedtuple('TaskData', (
 
 
 class JobQueue(object):
-
     def __init__(self):
         # mapping of jobTypes to queues of jobs of that type
         self.queues = {}
@@ -94,7 +94,6 @@ class ResourceRequirement(object):
         """
         return self.cores
 
-
     def __gt__(self, other):
         """
         Returns True if self is greater than other, else returns False.
@@ -136,9 +135,9 @@ class ResourceRequirement(object):
 
     def __eq__(self, other):
         if (self.preemptable == other.preemptable and
-           self.cores == other.cores and
-           self.memory == other.memory and
-           self.disk == other.disk):
+                    self.cores == other.cores and
+                    self.memory == other.memory and
+                    self.disk == other.disk):
             return True
         return False
 

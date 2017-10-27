@@ -36,6 +36,7 @@ LSF_CONF_ENV = ["LSF_CONFDIR", "LSF_ENVDIR"]
 DEFAULT_LSF_UNITS = "KB"
 DEFAULT_RESOURCE_UNITS = "MB"
 
+
 def find(basedir, string):
     """
     walk basedir and return all files matching string
@@ -46,6 +47,7 @@ def find(basedir, string):
             matches.append(os.path.join(root, filename))
     return matches
 
+
 def find_first_match(basedir, string):
     """
     return the first file that matches string starting from basedir
@@ -53,12 +55,14 @@ def find_first_match(basedir, string):
     matches = find(basedir, string)
     return matches[0] if matches else matches
 
+
 def get_conf_file(filename, env):
     conf_path = os.environ.get(env)
     if not conf_path:
         return None
     conf_file = find_first_match(conf_path, filename)
     return conf_file
+
 
 def apply_conf_file(fn, conf_filename):
     for env in LSF_CONF_ENV:
@@ -70,17 +74,20 @@ def apply_conf_file(fn, conf_filename):
                 return value
     return None
 
+
 def per_core_reserve_from_stream(stream):
     for k, v in tokenize_conf_stream(stream):
         if k == "RESOURCE_RESERVE_PER_SLOT":
             return v.upper()
     return None
 
+
 def get_lsf_units_from_stream(stream):
     for k, v in tokenize_conf_stream(stream):
         if k == "LSF_UNIT_FOR_LIMITS":
             return v
     return None
+
 
 def tokenize_conf_stream(conf_handle):
     """
@@ -94,6 +101,7 @@ def tokenize_conf_stream(conf_handle):
             continue
         yield (tokens[0].strip(), tokens[1].strip())
 
+
 def apply_bparams(fn):
     """
     apply fn to each line of bparams, returning the result
@@ -104,6 +112,7 @@ def apply_bparams(fn):
     except:
         return None
     return fn(output.split("\n"))
+
 
 def apply_lsadmin(fn):
     """
@@ -140,6 +149,7 @@ def get_lsf_units(resource=False):
     else:
         return DEFAULT_LSF_UNITS
 
+
 def parse_memory(mem):
     """
     Parse memory parameter
@@ -174,6 +184,7 @@ def per_core_reservation():
         return False
     return False
 
+
 def convert_mb(kb, unit):
     UNITS = {"B": -2,
              "KB": -1,
@@ -185,7 +196,6 @@ def convert_mb(kb, unit):
     return int(old_div(float(kb), float(math.pow(1024, UNITS[unit]))))
 
 
-
 if __name__ == "__main__":
-    print (get_lsf_units())
-    print (per_core_reservation())
+    print(get_lsf_units())
+    print(per_core_reservation())

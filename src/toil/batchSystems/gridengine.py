@@ -34,13 +34,14 @@ from toil.batchSystems.abstractGridEngineBatchSystem import AbstractGridEngineBa
 
 logger = logging.getLogger(__name__)
 
-class GridEngineBatchSystem(AbstractGridEngineBatchSystem):
 
+class GridEngineBatchSystem(AbstractGridEngineBatchSystem):
     class Worker(AbstractGridEngineBatchSystem.Worker):
 
         """
         Grid Engine-specific AbstractGridEngineWorker methods
         """
+
         def getRunningJobIDs(self):
             times = {}
             currentjobs = dict((str(self.batchJobIDs[x][0]), x) for x in self.runningJobs)
@@ -92,6 +93,7 @@ class GridEngineBatchSystem(AbstractGridEngineBatchSystem):
         """
         Implementation-specific helper methods
         """
+
         def prepareQsub(self, cpu, mem, jobID):
             qsubline = ['qsub', '-V', '-b', 'y', '-terse', '-j', 'y', '-cwd',
                         '-N', 'toil_job_' + str(jobID)]
@@ -112,7 +114,8 @@ class GridEngineBatchSystem(AbstractGridEngineBatchSystem):
                 sgeArgs = sgeArgs.split()
                 for arg in sgeArgs:
                     if arg.startswith(("vf=", "hvmem=", "-pe")):
-                        raise ValueError("Unexpected CPU, memory or pe specifications in TOIL_GRIDGENGINE_ARGs: %s" % arg)
+                        raise ValueError(
+                            "Unexpected CPU, memory or pe specifications in TOIL_GRIDGENGINE_ARGs: %s" % arg)
                 qsubline.extend(sgeArgs)
             if cpu is not None and math.ceil(cpu) > 1:
                 peConfig = os.getenv('TOIL_GRIDENGINE_PE') or 'shm'
@@ -131,6 +134,7 @@ class GridEngineBatchSystem(AbstractGridEngineBatchSystem):
     def obtainSystemConstants(cls):
         def byteStrip(s):
             return s.encode().strip()
+
         lines = [_f for _f in map(byteStrip, subprocess.check_output(["qhost"]).split('\n')) if _f]
         line = lines[0]
         items = line.strip().split()

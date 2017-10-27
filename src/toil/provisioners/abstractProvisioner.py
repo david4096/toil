@@ -17,14 +17,10 @@ from abc import ABCMeta, abstractmethod
 
 from collections import namedtuple
 
-
-
 from bd2k.util.retry import never
 from future.utils import with_metaclass
 
-
 log = logging.getLogger(__name__)
-
 
 Shape = namedtuple("_Shape", "wallTime memory cores disk preemptable")
 """
@@ -44,7 +40,6 @@ class AbstractProvisioner(with_metaclass(ABCMeta, object)):
     An abstract base class to represent the interface for provisioning worker nodes to use in a
     Toil cluster.
     """
-
 
     def __init__(self, config=None):
         """
@@ -85,7 +80,7 @@ class AbstractProvisioner(with_metaclass(ABCMeta, object)):
         prefix = 'non-' if not preemptable else ''
         log.debug("Adding %s to %spreemptable static nodes", nodes, prefix)
         if nodes is not None:
-            self.static[preemptable] = {node.privateIP : node for node in nodes}
+            self.static[preemptable] = {node.privateIP: node for node in nodes}
 
     @abstractmethod
     def addNodes(self, nodeType, numNodes, preemptable):

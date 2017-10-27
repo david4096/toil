@@ -35,8 +35,6 @@ logger = logging.getLogger(__name__)
 
 
 class TorqueBatchSystem(AbstractGridEngineBatchSystem):
-
-
     # class-specific Worker
     class Worker(AbstractGridEngineBatchSystem.Worker):
 
@@ -51,20 +49,21 @@ class TorqueBatchSystem(AbstractGridEngineBatchSystem):
                 out = subprocess.check_output(["pbsnodes", "--version"])
 
                 if "PBSPro" in out:
-                     logger.debug("PBS Pro proprietary Torque version detected")
-                     self._version = "pro"
+                    logger.debug("PBS Pro proprietary Torque version detected")
+                    self._version = "pro"
                 else:
-                     logger.debug("Torque OSS version detected")
-                     self._version = "oss"
+                    logger.debug("Torque OSS version detected")
+                    self._version = "oss"
             except subprocess.CalledProcessError as e:
-               if e.returncode != 0:
+                if e.returncode != 0:
                     logger.error("Could not determine PBS/Torque version")
 
             return self._version
-        
+
         """
         Torque-specific AbstractGridEngineWorker methods
         """
+
         def getRunningJobIDs(self):
             times = {}
             currentjobs = dict((str(self.batchJobIDs[x][0].strip()), x) for x in self.runningJobs)
@@ -79,7 +78,6 @@ class TorqueBatchSystem(AbstractGridEngineBatchSystem):
                 process = subprocess.Popen(['qstat', '-x'] + jobids, stdout=subprocess.PIPE)
             elif self._version == "oss":
                 process = subprocess.Popen(['qstat'] + jobids, stdout=subprocess.PIPE)
-
 
             stdout, stderr = process.communicate()
 
@@ -138,7 +136,7 @@ class TorqueBatchSystem(AbstractGridEngineBatchSystem):
             process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             for line in process.stdout:
                 line = line.strip()
-                #logger.debug("getJobExitCode exit status: " + line)
+                # logger.debug("getJobExitCode exit status: " + line)
                 # Case differences due to PBSPro vs OSS Torque qstat outputs
                 if line.startswith("failed") or line.startswith("FAILED") and int(line.split()[1]) == 1:
                     return 1
@@ -157,6 +155,7 @@ class TorqueBatchSystem(AbstractGridEngineBatchSystem):
         """
         Implementation-specific helper methods
         """
+
         def prepareQsub(self, cpu, mem, jobID):
 
             # TODO: passing $PWD on command line not working for -d, resorting to
@@ -187,25 +186,27 @@ class TorqueBatchSystem(AbstractGridEngineBatchSystem):
             # Other resource requirements can be passed through the environment (see man qsub)
             reqlineEnv = os.getenv('TOIL_TORQUE_REQS')
             if reqlineEnv is not None:
-                logger.debug("Additional Torque resource requirements appended to qsub from "\
-                        "TOIL_TORQUE_REQS env. variable: {}".format(reqlineEnv))
+                logger.debug("Additional Torque resource requirements appended to qsub from " \
+                             "TOIL_TORQUE_REQS env. variable: {}".format(reqlineEnv))
                 if ("mem=" in reqlineEnv) or ("nodes=" in reqlineEnv) or ("ppn=" in reqlineEnv):
-                    raise ValueError("Incompatible resource arguments ('mem=', 'nodes=', 'ppn='): {}".format(reqlineEnv))
+                    raise ValueError(
+                        "Incompatible resource arguments ('mem=', 'nodes=', 'ppn='): {}".format(reqlineEnv))
 
                 reqline.append(reqlineEnv)
-            
+
             if reqline:
-                qsubline += ['-l',','.join(reqline)]
-            
+                qsubline += ['-l', ','.join(reqline)]
+
             # All other qsub parameters can be passed through the environment (see man qsub).
             # No attempt is made to parse them out here and check that they do not conflict
             # with those that we already constructed above
             arglineEnv = os.getenv('TOIL_TORQUE_ARGS')
             if arglineEnv is not None:
-                logger.debug("Native Torque options appended to qsub from TOIL_TORQUE_ARGS env. variable: {}".\
-                        format(arglineEnv))
+                logger.debug("Native Torque options appended to qsub from TOIL_TORQUE_ARGS env. variable: {}". \
+                             format(arglineEnv))
                 if ("mem=" in arglineEnv) or ("nodes=" in arglineEnv) or ("ppn=" in arglineEnv):
-                    raise ValueError("Incompatible resource arguments ('mem=', 'nodes=', 'ppn='): {}".format(arglineEnv))
+                    raise ValueError(
+                        "Incompatible resource arguments ('mem=', 'nodes=', 'ppn='): {}".format(arglineEnv))
                 qsubline += shlex.split(arglineEnv)
 
             return qsubline
@@ -216,15 +217,14 @@ class TorqueBatchSystem(AbstractGridEngineBatchSystem):
             now this goes to default tempdir
             """
             _, tmpFile = tempfile.mkstemp(suffix='.sh', prefix='torque_wrapper')
-            fh = open(tmpFile , 'w')
+            fh = open(tmpFile, 'w')
             fh.write("#!/bin/sh\n")
             fh.write("cd $PBS_O_WORKDIR\n\n")
             fh.write(command + "\n")
 
             fh.close
-            
-            return tmpFile
 
+            return tmpFile
 
     @classmethod
     def obtainSystemConstants(cls):
@@ -232,6 +232,5 @@ class TorqueBatchSystem(AbstractGridEngineBatchSystem):
         # See: https://github.com/BD2KGenomics/toil/pull/1617#issuecomment-293525747
         logger.debug("PBS/Torque does not need obtainSystemConstants to assess global cluster resources.")
 
-
-        #return maxCPU, maxMEM
+        # return maxCPU, maxMEM
         return None, None

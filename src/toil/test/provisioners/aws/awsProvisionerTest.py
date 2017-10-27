@@ -28,11 +28,9 @@ from boto.ec2.blockdevicemapping import BlockDeviceType
 from boto.exception import EC2ResponseError
 from toil.lib.ec2 import wait_instances_running
 
-
 from toil.provisioners.aws.awsProvisioner import AWSProvisioner
 
 from uuid import uuid4
-
 
 from toil.test import needs_aws, integrative, ToilTest, needs_appliance, timeLimit, slow
 
@@ -44,7 +42,6 @@ log = logging.getLogger(__name__)
 @needs_appliance
 @slow
 class AbstractAWSAutoscaleTest(ToilTest):
-
     def sshUtil(self, command):
         baseCommand = ['toil', 'ssh-cluster', '--insecure', '-p=aws', self.clusterName]
         callCommand = baseCommand + command
@@ -111,7 +108,6 @@ class AbstractAWSAutoscaleTest(ToilTest):
         """
         raise NotImplementedError()
 
-
     @abstractmethod
     def _runScript(self, toilOptions):
         """
@@ -171,7 +167,7 @@ class AbstractAWSAutoscaleTest(ToilTest):
         checkStatsCommand = ['/home/venv/bin/python', '-c',
                              'import json; import os; '
                              'json.load(open("/home/" + [f for f in os.listdir("/home/") '
-                                                   'if f.endswith(".json")].pop()))'
+                             'if f.endswith(".json")].pop()))'
                              ]
 
         self.sshUtil(checkStatsCommand)
@@ -200,7 +196,6 @@ class AbstractAWSAutoscaleTest(ToilTest):
 
 @pytest.mark.timeout(1200)
 class AWSAutoscaleTest(AbstractAWSAutoscaleTest):
-
     def __init__(self, name):
         super(AWSAutoscaleTest, self).__init__(name)
         self.clusterName = 'provisioner-test-' + str(uuid4())
@@ -220,7 +215,8 @@ class AWSAutoscaleTest(AbstractAWSAutoscaleTest):
         os.unlink(fileToSort)
 
     def _runScript(self, toilOptions):
-        runCommand = ['/home/venv/bin/python', '/home/sort.py', '--fileToSort=/home/sortFile', '--sseKey=/home/sortFile']
+        runCommand = ['/home/venv/bin/python', '/home/sort.py', '--fileToSort=/home/sortFile',
+                      '--sseKey=/home/sortFile']
         runCommand.extend(toilOptions)
         self.sshUtil(runCommand)
 
@@ -261,6 +257,7 @@ class AWSStaticAutoscaleTest(AWSAutoscaleTest):
     """
     Runs the tests on a statically provisioned cluster with autoscaling enabled.
     """
+
     def __init__(self, name):
         super(AWSStaticAutoscaleTest, self).__init__(name)
         self.requestedNodeStorage = 20
@@ -268,7 +265,8 @@ class AWSStaticAutoscaleTest(AWSAutoscaleTest):
     def launchCluster(self):
         from boto.ec2.blockdevicemapping import BlockDeviceType
         self.createClusterUtil(args=['--leaderStorage', str(self.requestedLeaderStorage),
-                                     '--nodeTypes', ",".join(self.instanceTypes), '-w', ",".join(self.numWorkers), '--nodeStorage', str(self.requestedLeaderStorage)])
+                                     '--nodeTypes', ",".join(self.instanceTypes), '-w', ",".join(self.numWorkers),
+                                     '--nodeStorage', str(self.requestedLeaderStorage)])
 
         ctx = AWSProvisioner._buildContext(self.clusterName)
         nodes = AWSProvisioner._getNodesInCluster(ctx, self.clusterName, both=True)
@@ -291,9 +289,9 @@ class AWSStaticAutoscaleTest(AWSAutoscaleTest):
         runCommand.extend(toilOptions)
         self.sshUtil(runCommand)
 
+
 @pytest.mark.timeout(1200)
 class AWSAutoscaleTestMultipleNodeTypes(AbstractAWSAutoscaleTest):
-
     def __init__(self, name):
         super(AWSAutoscaleTestMultipleNodeTypes, self).__init__(name)
         self.clusterName = 'provisioner-test-' + str(uuid4())
@@ -311,10 +309,11 @@ class AWSAutoscaleTestMultipleNodeTypes(AbstractAWSAutoscaleTest):
         os.unlink(sseKeyFile)
 
     def _runScript(self, toilOptions):
-        #Set memory requirements so that sort jobs can be run
+        # Set memory requirements so that sort jobs can be run
         # on small instances, but merge jobs must be run on large
         # instances
-        runCommand = ['/home/venv/bin/python', '/home/sort.py', '--fileToSort=/home/s3am/bin/asadmin', '--sortMemory=1.0G', '--mergeMemory=3.0G']
+        runCommand = ['/home/venv/bin/python', '/home/sort.py', '--fileToSort=/home/s3am/bin/asadmin',
+                      '--sortMemory=1.0G', '--mergeMemory=3.0G']
         runCommand.extend(toilOptions)
         runCommand.append('--sseKey=/home/keyFile')
         self.sshUtil(runCommand)
@@ -323,8 +322,9 @@ class AWSAutoscaleTestMultipleNodeTypes(AbstractAWSAutoscaleTest):
     @needs_aws
     def testAutoScale(self):
         self.instanceTypes = ["t2.small", "m3.large"]
-        self.numWorkers = ['2','1']
+        self.numWorkers = ['2', '1']
         self._test()
+
 
 @pytest.mark.timeout(1200)
 class AWSRestartTest(AbstractAWSAutoscaleTest):
@@ -386,17 +386,17 @@ class AWSRestartTest(AbstractAWSAutoscaleTest):
     def testAutoScaledCluster(self):
         self._test()
 
+
 @pytest.mark.timeout(1200)
 class PreemptableDeficitCompensationTest(AbstractAWSAutoscaleTest):
-
     def __init__(self, name):
         super(PreemptableDeficitCompensationTest, self).__init__(name)
         self.clusterName = 'deficit-test-' + str(uuid4())
 
     def setUp(self):
         super(PreemptableDeficitCompensationTest, self).setUp()
-        self.instanceTypes = ['m3.large:0.01', "m3.large"] # instance needs to be available on the spot market
-        self.numWorkers = ['1','1']
+        self.instanceTypes = ['m3.large:0.01', "m3.large"]  # instance needs to be available on the spot market
+        self.numWorkers = ['1', '1']
         self.jobStore = 'aws:%s:deficit-%s' % (self.awsRegion(), uuid4())
 
     def test(self):

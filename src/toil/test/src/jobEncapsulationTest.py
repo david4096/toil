@@ -66,6 +66,7 @@ class JobEncapsulationTest(ToilTest):
 def noOp():
     pass
 
+
 def encapsulatedJobFn(job, string, outFile):
     a = job.addChildFn(f, string, outFile)
     b = a.addFollowOnFn(f, a.rv(), outFile)

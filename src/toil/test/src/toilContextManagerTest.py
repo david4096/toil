@@ -60,6 +60,7 @@ class ToilContextManagerTest(ToilTest):
             # The file should have all our content
             self.assertEquals(f.read(), "Hello, World!")
 
+
 class HelloWorld(Job):
     def __init__(self):
         Job.__init__(self, memory=100000, cores=2, disk='1M')

@@ -101,7 +101,6 @@ class hidden(object):
             assert (minValue, maxValue) == (0, 0)
             return counterPath
 
-
         def testJobConcurrency(self):
             pass
 
@@ -237,4 +236,3 @@ class MesosPromisedRequirementsTest(hidden.AbstractPromisedRequirementsTest, Mes
 
     def tearDown(self):
         self._stopMesos()
-

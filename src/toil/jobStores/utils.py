@@ -10,6 +10,7 @@ from future.utils import with_metaclass
 
 log = logging.getLogger(__name__)
 
+
 class WritablePipe(with_metaclass(ABCMeta, object)):
     """
     An object-oriented wrapper for os.pipe. Clients should subclass it, implement

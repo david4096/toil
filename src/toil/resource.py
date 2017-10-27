@@ -15,6 +15,7 @@
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import map
 import errno
@@ -312,6 +313,7 @@ class VirtualEnvResource(DirectoryResource):
     A resource read from a virtualenv on the leader. All modules and packages found in the
     virtualenv's site-packages directory will be included.
     """
+
     @classmethod
     def _load(cls, path):
         """

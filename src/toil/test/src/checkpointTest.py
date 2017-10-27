@@ -18,6 +18,7 @@ from toil.test import ToilTest, slow
 from toil.leader import FailedJobsException
 from toil.jobStores.abstractJobStore import NoSuchFileException
 
+
 class CheckpointTest(ToilTest):
     def testCheckpointNotRetried(self):
         """A checkpoint job should not be retried if the workflow has a retryCount of 0."""
@@ -63,8 +64,10 @@ class CheckpointTest(ToilTest):
         except FailedJobsException:
             self.fail("Checkpointed workflow restart doesn't clean failures.")
 
+
 class CheckRetryCount(Job):
     """Fail N times, succeed on the next try."""
+
     def __init__(self, numFailuresBeforeSuccess):
         super(CheckRetryCount, self).__init__(checkpoint=True)
         self.numFailuresBeforeSuccess = numFailuresBeforeSuccess
@@ -86,9 +89,11 @@ class CheckRetryCount(Job):
         if retryCount < self.numFailuresBeforeSuccess:
             self.addChild(AlwaysFail())
 
+
 class AlwaysFail(Job):
     def run(self, fileStore):
         raise RuntimeError(":(")
+
 
 class CheckpointFailsFirstTime(Job):
     def __init__(self):
@@ -97,8 +102,10 @@ class CheckpointFailsFirstTime(Job):
     def run(self, fileStore):
         self.addChild(FailOnce())
 
+
 class FailOnce(Job):
     """Fail the first time the workflow is run, but succeed thereafter."""
+
     def run(self, fileStore):
         if fileStore.jobStore.config.workflowAttemptNumber < 1:
             raise RuntimeError("first time around")

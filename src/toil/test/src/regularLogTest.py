@@ -22,7 +22,6 @@ from toil.test.mesos import helloWorld
 
 
 class RegularLogTest(ToilTest):
-
     def setUp(self):
         super(RegularLogTest, self).setUp()
         self.tempDir = self._createTempDir(purpose='tempDir')
@@ -44,7 +43,6 @@ class RegularLogTest(ToilTest):
                 else:
                     mime = mimetypes.guess_type(log)
                     self.assertEqual(mime[1], encoding)
-
 
     @slow
     def testLogToMaster(self):
@@ -73,7 +71,7 @@ class RegularLogTest(ToilTest):
                                               '--clean=always',
                                               '--logLevel=debug',
                                               '--writeLogsGzip=%s' % self.tempDir],
-                                              stderr=subprocess.STDOUT)
+                                             stderr=subprocess.STDOUT)
         self._assertFileTypeExists(self.tempDir, '.log.gz', 'gzip')
 
     @slow

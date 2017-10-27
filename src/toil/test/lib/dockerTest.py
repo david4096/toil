@@ -32,6 +32,7 @@ class DockerTest(ToilTest):
     removed during tear down.
     Otherwise, left-over files will not be removed.
     """
+
     def setUp(self):
         self.tempDir = self._createTempDir(purpose='tempDir')
         self.dockerTestLogLevel = 'INFO'
@@ -272,6 +273,7 @@ class DockerTest(ToilTest):
     def testNonCachingDockerChainErrorDetection(self):
         self.testDockerPipeChainErrorDetection(disableCaching=False)
 
+
 def _testDockerCleanFn(job,
                        working_dir,
                        detached=None,
@@ -288,6 +290,7 @@ def _testDockerCleanFn(job,
     :param int deferParam: See `deferParam=` in :func:`dockerCall`
     :param str containerName: See `container_name=` in :func:`dockerCall`
     """
+
     def killSelf():
         test_file = os.path.join(working_dir, 'test.txt')
         # Kill the worker once we are sure the docker container is started
@@ -311,17 +314,19 @@ def _testDockerCleanFn(job,
                   remove=rm,
                   privileged=True)
 
+
 def _testDockerPipeChainFn(job):
     """Return the result of a simple pipe chain.  Should be 2."""
-    parameters = [ ['printf', 'x\n y\n'], ['wc', '-l'] ]
+    parameters = [['printf', 'x\n y\n'], ['wc', '-l']]
     return apiDockerCall(job,
                          image='quay.io/ucsc_cgl/spooky_test',
                          parameters=parameters,
                          privileged=True)
 
+
 def _testDockerPipeChainErrorFn(job):
     """Return True if the command exit 1 | wc -l raises a ContainerError."""
-    parameters = [ ['exit', '1'], ['wc', '-l'] ]
+    parameters = [['exit', '1'], ['wc', '-l']]
     try:
         apiDockerCall(job,
                       image='quay.io/ucsc_cgl/spooky_test',

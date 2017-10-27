@@ -48,7 +48,7 @@ def main():
                              " }. ")
     parser.add_argument("--vpcSubnet",
                         help="VPC subnet ID to launch cluster in. Uses default subnet if not specified. "
-                        "This subnet needs to have auto assign IPs turned on.")
+                             "This subnet needs to have auto assign IPs turned on.")
     parser.add_argument("--nodeTypes", dest='nodeTypes', default=None, type=str,
                         help="Comma-separated list of node types to create while launching the leader. The "
                              "syntax for each node type depends on the "
@@ -84,7 +84,7 @@ def main():
             raise RuntimeError('The aws extra must be installed to use this provisioner')
         provisioner = AWSProvisioner()
 
-        #Parse leader node type and spot bid
+        # Parse leader node type and spot bid
         parsedBid = config.leaderNodeType.split(':', 1)
         if len(config.leaderNodeType) != len(parsedBid[0]):
             leaderSpotBid = float(parsedBid[1])
@@ -100,7 +100,7 @@ def main():
             for nodeTypeStr, num in zip(nodeTypesList, numWorkersList):
                 parsedBid = nodeTypeStr.split(':', 1)
                 if len(nodeTypeStr) != len(parsedBid[0]):
-                    #Is a preemptable node
+                    # Is a preemptable node
 
                     preemptableNodeTypes.append(parsedBid[0])
                     spotBids.append(float(parsedBid[1]))
@@ -116,7 +116,7 @@ def main():
                               nodeTypes=nodeTypes,
                               preemptableNodeTypes=preemptableNodeTypes,
                               numWorkers=numNodes,
-                              numPreemptableWorkers = numPreemptableNodes,
+                              numPreemptableWorkers=numPreemptableNodes,
                               keyName=config.keyPairName,
                               clusterName=config.clusterName,
                               spotBids=spotBids,

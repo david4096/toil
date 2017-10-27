@@ -1,22 +1,22 @@
-#Copyright (C) 2013 by Thomas Keane (tk2@sanger.ac.uk)
+# Copyright (C) 2013 by Thomas Keane (tk2@sanger.ac.uk)
 #
-#Permission is hereby granted, free of charge, to any person obtaining a copy
-#of this software and associated documentation files (the "Software"), to deal
-#in the Software without restriction, including without limitation the rights
-#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#copies of the Software, and to permit persons to whom the Software is
-#furnished to do so, subject to the following conditions:
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#The above copyright notice and this permission notice shall be included in
-#all copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#THE SOFTWARE.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 from __future__ import absolute_import
 from __future__ import division
 from builtins import str
@@ -36,8 +36,7 @@ from toil.batchSystems import MemoryString
 from toil.batchSystems.abstractBatchSystem import BatchSystemSupport
 from toil.batchSystems.lsfHelper import parse_memory, per_core_reservation
 
-logger = logging.getLogger( __name__ )
-
+logger = logging.getLogger(__name__)
 
 
 def prepareBsub(cpu, mem):
@@ -50,72 +49,75 @@ def prepareBsub(cpu, mem):
     """
     if mem:
         if per_core_reservation():
-            mem = parse_memory(float(mem)/1024**3/int(cpu))
+            mem = parse_memory(float(mem) / 1024 ** 3 / int(cpu))
         else:
-            mem = parse_memory(old_div(float(mem),1024**3))
-        bsubMem = '-R "select[type==X86_64 && mem > ' + str(mem) + '] '\
-            'rusage[mem=' + str(mem) + ']" -M' + str(mem)
+            mem = parse_memory(old_div(float(mem), 1024 ** 3))
+        bsubMem = '-R "select[type==X86_64 && mem > ' + str(mem) + '] ' \
+                                                                   'rusage[mem=' + str(mem) + ']" -M' + str(mem)
     else:
         bsubMem = ''
     cpuStr = '' if cpu is None else '-n ' + str(int(cpu))
-    bsubline = ["bsub", bsubMem, cpuStr,"-cwd", ".", "-o", "/dev/null", "-e",
-        "/dev/null"]
+    bsubline = ["bsub", bsubMem, cpuStr, "-cwd", ".", "-o", "/dev/null", "-e",
+                "/dev/null"]
     lsfArgs = os.getenv('TOIL_LSF_ARGS')
     if lsfArgs:
         bsubline.extend(lsfArgs.split())
     return bsubline
 
+
 def bsub(bsubline):
-    process = subprocess.Popen(" ".join(bsubline), shell=True, stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
+    process = subprocess.Popen(" ".join(bsubline), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     liney = process.stdout.readline()
     logger.debug("BSUB: " + liney)
     result = int(liney.strip().split()[1].strip('<>'))
     logger.debug("Got the job id: %s" % (str(result)))
     return result
 
+
 def getjobexitcode(lsfJobID):
-        job, task = lsfJobID
+    job, task = lsfJobID
 
-        #first try bjobs to find out job state
-        args = ["bjobs", "-l", str(job)]
-        logger.debug("Checking job exit code for job via bjobs: " + str(job))
-        process = subprocess.Popen(" ".join(args), shell=True, stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
-        started = 0
-        for line in process.stdout:
-            if line.find("Done successfully") > -1:
-                logger.debug("bjobs detected job completed for job: " + str(job))
-                return 0
-            elif line.find("Completed <exit>") > -1:
-                logger.debug("bjobs detected job failed for job: " + str(job))
-                return 1
-            elif line.find("New job is waiting for scheduling") > -1:
-                logger.debug("bjobs detected job pending scheduling for job: " + str(job))
-                return None
-            elif line.find("PENDING REASONS") > -1:
-                logger.debug("bjobs detected job pending for job: " + str(job))
-                return None
-            elif line.find("Started on ") > -1:
-                started = 1
-
-        if started == 1:
-            logger.debug("bjobs detected job started but not completed: " + str(job))
+    # first try bjobs to find out job state
+    args = ["bjobs", "-l", str(job)]
+    logger.debug("Checking job exit code for job via bjobs: " + str(job))
+    process = subprocess.Popen(" ".join(args), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    started = 0
+    for line in process.stdout:
+        if line.find("Done successfully") > -1:
+            logger.debug("bjobs detected job completed for job: " + str(job))
+            return 0
+        elif line.find("Completed <exit>") > -1:
+            logger.debug("bjobs detected job failed for job: " + str(job))
+            return 1
+        elif line.find("New job is waiting for scheduling") > -1:
+            logger.debug("bjobs detected job pending scheduling for job: " + str(job))
             return None
+        elif line.find("PENDING REASONS") > -1:
+            logger.debug("bjobs detected job pending for job: " + str(job))
+            return None
+        elif line.find("Started on ") > -1:
+            started = 1
 
-        #if not found in bjobs, then try bacct (slower than bjobs)
-        logger.debug("bjobs failed to detect job - trying bacct: " + str(job))
-
-        args = ["bacct", "-l", str(job)]
-        logger.debug("Checking job exit code for job via bacct:" + str(job))
-        process = subprocess.Popen(" ".join(args), shell=True, stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
-        for line in process.stdout:
-            if line.find("Completed <done>") > -1:
-                logger.debug("Detected job completed for job: " + str(job))
-                return 0
-            elif line.find("Completed <exit>") > -1:
-                logger.debug("Detected job failed for job: " + str(job))
-                return 1
-        logger.debug("Cant determine exit code for job or job still running: " + str(job))
+    if started == 1:
+        logger.debug("bjobs detected job started but not completed: " + str(job))
         return None
+
+    # if not found in bjobs, then try bacct (slower than bjobs)
+    logger.debug("bjobs failed to detect job - trying bacct: " + str(job))
+
+    args = ["bacct", "-l", str(job)]
+    logger.debug("Checking job exit code for job via bacct:" + str(job))
+    process = subprocess.Popen(" ".join(args), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for line in process.stdout:
+        if line.find("Completed <done>") > -1:
+            logger.debug("Detected job completed for job: " + str(job))
+            return 0
+        elif line.find("Completed <exit>") > -1:
+            logger.debug("Detected job failed for job: " + str(job))
+            return 1
+    logger.debug("Cant determine exit code for job or job still running: " + str(job))
+    return None
+
 
 class Worker(Thread):
     def __init__(self, newJobsQueue, updatedJobsQueue, boss):
@@ -149,11 +151,13 @@ class Worker(Thread):
 
             time.sleep(10)
 
+
 class LSFBatchSystem(BatchSystemSupport):
     """
     The interface for running jobs on lsf, runs all the jobs you give it as they come in,
     but in parallel.
     """
+
     @classmethod
     def supportsWorkerCleanup(cls):
         return False
@@ -168,9 +172,9 @@ class LSFBatchSystem(BatchSystemSupport):
     def __init__(self, config, maxCores, maxMemory, maxDisk):
         super(LSFBatchSystem, self).__init__(config, maxCores, maxMemory, maxDisk)
         self.lsfResultsFile = self._getResultsFileName(config.jobStore)
-        #Reset the job queue and results (initially, we do this again once we've killed the jobs)
+        # Reset the job queue and results (initially, we do this again once we've killed the jobs)
         self.lsfResultsFileHandle = open(self.lsfResultsFile, 'w')
-        self.lsfResultsFileHandle.close() #We lose any previous state in this file, and ensure the files existence
+        self.lsfResultsFileHandle.close()  # We lose any previous state in this file, and ensure the files existence
         self.currentjobs = set()
         self.obtainSystemConstants()
         self.jobIDs = dict()
@@ -184,8 +188,8 @@ class LSFBatchSystem(BatchSystemSupport):
         self.worker.start()
 
     def __des__(self):
-        #Closes the file handle associated with the results file.
-        self.lsfResultsFileHandle.close() #Close the results file, cos were done.
+        # Closes the file handle associated with the results file.
+        self.lsfResultsFileHandle.close()  # Close the results file, cos were done.
 
     def issueBatchJob(self, jobNode):
         jobID = self.nextJobID
@@ -198,13 +202,13 @@ class LSFBatchSystem(BatchSystemSupport):
 
     def getLsfID(self, jobID):
         if not jobID in self.lsfJobIDs:
-             RuntimeError("Unknown jobID, could not be converted")
+            RuntimeError("Unknown jobID, could not be converted")
 
-        (job,task) = self.lsfJobIDs[jobID]
+        (job, task) = self.lsfJobIDs[jobID]
         if task is None:
-             return str(job)
+            return str(job)
         else:
-             return str(job) + "." + str(task)
+            return str(job) + "." + str(task)
 
     def killBatchJobs(self, jobIDs):
         """Kills the given job IDs.
@@ -224,7 +228,7 @@ class LSFBatchSystem(BatchSystemSupport):
 
             if len(toKill) > 0:
                 logger.warn("Tried to kill some jobs, but something happened and they are still going, "
-                             "so I'll try again")
+                            "so I'll try again")
                 time.sleep(5)
 
     def getIssuedBatchJobIDs(self):
@@ -243,17 +247,17 @@ class LSFBatchSystem(BatchSystemSupport):
             if x in self.lsfJobIDs:
                 currentjobs.add(self.lsfJobIDs[x])
             else:
-                #not yet started
+                # not yet started
                 pass
-        process = subprocess.Popen(["bjobs"], stdout = subprocess.PIPE)
+        process = subprocess.Popen(["bjobs"], stdout=subprocess.PIPE)
 
         for curline in process.stdout:
             items = curline.strip().split()
             if (len(items) > 9 and (items[0]) in currentjobs) and items[2] == 'RUN':
                 jobstart = "/".join(items[7:9]) + '/' + str(date.today().year)
                 jobstart = jobstart + ' ' + items[9]
-                jobstart = time.mktime(time.strptime(jobstart,"%b/%d/%Y %H:%M"))
-                jobstart = time.mktime(time.strptime(jobstart,"%m/%d/%Y %H:%M:%S"))
+                jobstart = time.mktime(time.strptime(jobstart, "%b/%d/%Y %H:%M"))
+                jobstart = time.mktime(time.strptime(jobstart, "%m/%d/%Y %H:%M:%S"))
                 times[self.jobIDs[(items[0])]] = time.time() - jobstart
         return times
 
@@ -271,7 +275,7 @@ class LSFBatchSystem(BatchSystemSupport):
     def getWaitDuration(self):
         """We give parasol a second to catch its breath (in seconds)
         """
-        #return 0.0
+        # return 0.0
         return 15
 
     @classmethod
@@ -282,7 +286,7 @@ class LSFBatchSystem(BatchSystemSupport):
         return 1800
 
     def obtainSystemConstants(self):
-        p = subprocess.Popen(["lshosts"], stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
+        p = subprocess.Popen(["lshosts"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         line = p.stdout.readline()
         items = line.strip().split()
@@ -290,27 +294,27 @@ class LSFBatchSystem(BatchSystemSupport):
         cpu_index = None
         mem_index = None
         for i in range(num_columns):
-                if items[i] == 'ncpus':
-                        cpu_index = i
-                elif items[i] == 'maxmem':
-                        mem_index = i
+            if items[i] == 'ncpus':
+                cpu_index = i
+            elif items[i] == 'maxmem':
+                mem_index = i
 
         if cpu_index is None or mem_index is None:
-                RuntimeError("lshosts command does not return ncpus or maxmem columns")
+            RuntimeError("lshosts command does not return ncpus or maxmem columns")
 
         p.stdout.readline()
 
         self.maxCPU = 0
         self.maxMEM = MemoryString("0")
         for line in p.stdout:
-                items = line.strip().split()
-                if len(items) < num_columns:
-                        RuntimeError("lshosts output has a varying number of columns")
-                if items[cpu_index] != '-' and items[cpu_index] > self.maxCPU:
-                        self.maxCPU = items[cpu_index]
-                if items[mem_index] != '-' and MemoryString(items[mem_index]) > self.maxMEM:
-                        self.maxMEM = MemoryString(items[mem_index])
+            items = line.strip().split()
+            if len(items) < num_columns:
+                RuntimeError("lshosts output has a varying number of columns")
+            if items[cpu_index] != '-' and items[cpu_index] > self.maxCPU:
+                self.maxCPU = items[cpu_index]
+            if items[mem_index] != '-' and MemoryString(items[mem_index]) > self.maxMEM:
+                self.maxMEM = MemoryString(items[mem_index])
 
         if self.maxCPU is 0 or self.maxMEM is 0:
-                RuntimeError("lshosts returns null ncpus or maxmem info")
+            RuntimeError("lshosts returns null ncpus or maxmem info")
         logger.debug("Got the maxCPU: %s" % (self.maxMEM))

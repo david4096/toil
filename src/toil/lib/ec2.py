@@ -37,7 +37,7 @@ def not_found(e):
 def retry_ec2(
         retry_after=a_short_time,
         retry_for=10 *
-        a_short_time,
+                  a_short_time,
         retry_while=not_found):
     t = retry_after
     return retry(
@@ -416,6 +416,7 @@ def create_spot_instances(
     """
     :rtype: Iterator[list[Instance]]
     """
+
     def spotRequestNotFound(e):
         return e.error_code == "InvalidSpotInstanceRequestID.NotFound"
 

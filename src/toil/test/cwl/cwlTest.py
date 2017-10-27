@@ -30,14 +30,13 @@ from toil.test import ToilTest, needs_cwl, slow
 
 @needs_cwl
 class CWLTest(ToilTest):
-
     def _tester(self, cwlfile, jobfile, outDir, expect):
         from toil.cwl import cwltoil
         rootDir = self._projectRootPath()
         st = StringIO()
         cwltoil.main(['--outdir', outDir,
-                            os.path.join(rootDir, cwlfile),
-                            os.path.join(rootDir, jobfile)],
+                      os.path.join(rootDir, cwlfile),
+                      os.path.join(rootDir, jobfile)],
                      stdout=st)
         out = json.loads(st.getvalue())
         out["output"].pop("http://commonwl.org/cwltool#generation", None)
@@ -50,8 +49,8 @@ class CWLTest(ToilTest):
         rootDir = self._projectRootPath()
         st = StringIO()
         cwltoil.main(['--debug-worker', '--outdir', outDir,
-                     os.path.join(rootDir, cwlfile),
-                     os.path.join(rootDir, jobfile)], stdout=st)
+                      os.path.join(rootDir, cwlfile),
+                      os.path.join(rootDir, jobfile)], stdout=st)
         out = json.loads(st.getvalue())
         out["output"].pop("http://commonwl.org/cwltool#generation", None)
         out["output"].pop("nameext", None)
@@ -63,29 +62,29 @@ class CWLTest(ToilTest):
         self._tester('src/toil/test/cwl/revsort.cwl',
                      'src/toil/test/cwl/revsort-job.json',
                      outDir, {
-            # Having unicode string literals isn't necessary for the assertion but makes for a
-            # less noisy diff in case the assertion fails.
-            u'output': {
-                u'location': "file://" + str(os.path.join(outDir, 'output.txt')),
-                u'basename': str("output.txt"),
-                u'size': 1111,
-                u'class': u'File',
-                u'checksum': u'sha1$b9214658cc453331b62c2282b772a5c063dbd284'}})
+                         # Having unicode string literals isn't necessary for the assertion but makes for a
+                         # less noisy diff in case the assertion fails.
+                         u'output': {
+                             u'location': "file://" + str(os.path.join(outDir, 'output.txt')),
+                             u'basename': str("output.txt"),
+                             u'size': 1111,
+                             u'class': u'File',
+                             u'checksum': u'sha1$b9214658cc453331b62c2282b772a5c063dbd284'}})
 
     def test_run_revsort_debug_worker(self):
         outDir = self._createTempDir()
         # Having unicode string literals isn't necessary for the assertion
         # but makes for a less noisy diff in case the assertion fails.
         self._debug_worker_tester(
-                'src/toil/test/cwl/revsort.cwl',
-                'src/toil/test/cwl/revsort-job.json', outDir, {u'output': {
-                    u'location': "file://" + str(os.path.join(
-                        outDir, 'output.txt')),
-                    u'basename': str("output.txt"),
-                    u'size': 1111,
-                    u'class': u'File',
-                    u'checksum':
-                        u'sha1$b9214658cc453331b62c2282b772a5c063dbd284'}})
+            'src/toil/test/cwl/revsort.cwl',
+            'src/toil/test/cwl/revsort-job.json', outDir, {u'output': {
+                u'location': "file://" + str(os.path.join(
+                    outDir, 'output.txt')),
+                u'basename': str("output.txt"),
+                u'size': 1111,
+                u'class': u'File',
+                u'checksum':
+                    u'sha1$b9214658cc453331b62c2282b772a5c063dbd284'}})
 
     @slow
     def test_restart(self):
@@ -102,6 +101,7 @@ class CWLTest(ToilTest):
         def path_without_rev():
             return ":".join([d for d in os.environ["PATH"].split(":")
                              if not os.path.exists(os.path.join(d, "rev"))])
+
         orig_path = os.environ["PATH"]
         # Force a failure and half finished job by removing `rev` from the PATH
         os.environ["PATH"] = path_without_rev()

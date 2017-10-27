@@ -16,7 +16,7 @@ import logging
 
 from toil.job import JobNode
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
 
 
 class JobGraph(JobNode):
@@ -26,6 +26,7 @@ class JobGraph(JobNode):
     scripts is persisted separately since it may be much bigger than the state managed by this
     class and should therefore only be held in memory for brief periods of time.
     """
+
     def __init__(self, command, memory, cores, disk, unitName, jobName, preemptable,
                  jobStoreID, remainingRetryCount, predecessorNumber,
                  filesToDelete=None, predecessorsFinished=None,
@@ -47,47 +48,47 @@ class JobGraph(JobNode):
         # The number of times the job should be retried if it fails This number is reduced by
         # retries until it is zero and then no further retries are made
         self.remainingRetryCount = remainingRetryCount
-        
+
         # This variable is used in creating a graph of jobs. If a job crashes after an update to
         # the jobGraph but before the list of files to remove is deleted then this list can be
         # used to clean them up.
         self.filesToDelete = filesToDelete or []
-        
+
         # The number of predecessor jobs of a given job. A predecessor is a job which references
         # this job in its stack.
         self.predecessorNumber = predecessorNumber
         # The IDs of predecessors that have finished. When len(predecessorsFinished) ==
         # predecessorNumber then the job can be run.
         self.predecessorsFinished = predecessorsFinished or set()
-        
+
         # The list of successor jobs to run. Successor jobs are stored as jobNodes. Successor
         # jobs are run in reverse order from the stack.
         self.stack = stack or []
-        
+
         # A jobStoreFileID of the log file for a job. This will be none unless the job failed and
         #  the logging has been captured to be reported on the leader.
-        self.logJobStoreFileID = logJobStoreFileID 
-        
+        self.logJobStoreFileID = logJobStoreFileID
+
         # A list of lists of service jobs to run. Each sub list is a list of service jobs
         # descriptions, each of which is stored as a 6-tuple of the form (jobStoreId, memory,
         # cores, disk, startJobStoreID, terminateJobStoreID).
         self.services = services or []
-        
+
         # An empty file in the jobStore which when deleted is used to signal that the service
         # should cease.
         self.terminateJobStoreID = terminateJobStoreID
-        
+
         # Similarly a empty file which when deleted is used to signal that the service is
         # established
         self.startJobStoreID = startJobStoreID
-        
+
         # An empty file in the jobStore which when deleted is used to signal that the service
         # should terminate signaling an error.
         self.errorJobStoreID = errorJobStoreID
-        
+
         # None, or a copy of the original command string used to reestablish the job after failure.
         self.checkpoint = checkpoint
-        
+
         # Files that can not be deleted until the job and its successors have completed
         self.checkpointFilesToDelete = checkpointFilesToDelete
 
@@ -130,13 +131,15 @@ class JobGraph(JobNode):
             else:
                 self.command = self.checkpoint
 
-            jobStore.update(self) # Update immediately to ensure that checkpoint
+            jobStore.update(self)  # Update immediately to ensure that checkpoint
             # is made before deleting any remaining successors
 
             if len(self.stack) > 0 or len(self.services) > 0:
                 # If the subtree of successors is not complete restart everything
-                logger.debug("Checkpoint job has unfinished successor jobs, deleting the jobs on the stack: %s, services: %s " %
-                             (self.stack, self.services))
+                logger.debug(
+                    "Checkpoint job has unfinished successor jobs, deleting the jobs on the stack: %s, services: %s " %
+                    (self.stack, self.services))
+
                 # Delete everything on the stack, as these represent successors to clean
                 # up as we restart the queue
                 def recursiveDelete(jobGraph2):
@@ -151,22 +154,23 @@ class JobGraph(JobNode):
                         logger.debug("Checkpoint is deleting old successor job: %s", jobGraph2.jobStoreID)
                         jobStore.delete(jobGraph2.jobStoreID)
                         successorsDeleted.append(jobGraph2.jobStoreID)
+
                 recursiveDelete(self)
 
-                self.stack = [ [], [] ] # Initialise the job to mimic the state of a job
+                self.stack = [[], []]  # Initialise the job to mimic the state of a job
                 # that has been previously serialised but which as yet has no successors
 
-                self.services = [] # Empty the services
+                self.services = []  # Empty the services
 
                 # Update the jobStore to avoid doing this twice on failure and make this clean.
                 jobStore.update(self)
         return successorsDeleted
 
-    def getLogFileHandle( self, jobStore ):
+    def getLogFileHandle(self, jobStore):
         """
         Returns a context manager that yields a file handle to the log file
         """
-        return jobStore.readFileStream( self.logJobStoreFileID )
+        return jobStore.readFileStream(self.logJobStoreFileID)
 
     @classmethod
     def fromJobNode(cls, jobNode, jobStoreID, tryCount):

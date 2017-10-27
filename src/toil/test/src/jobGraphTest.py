@@ -20,8 +20,8 @@ from toil.job import Job
 from toil.test import ToilTest
 from toil.jobGraph import JobGraph
 
+
 class JobGraphTest(ToilTest):
-    
     def setUp(self):
         super(JobGraphTest, self).setUp()
         self.jobStorePath = self._getTestJobStorePath()
@@ -29,33 +29,33 @@ class JobGraphTest(ToilTest):
         Job.Runner.addToilOptions(parser)
         options = parser.parse_args(args=[self.jobStorePath])
         self.toil = Toil(options)
-        self.assertEquals( self.toil, self.toil.__enter__() )
+        self.assertEquals(self.toil, self.toil.__enter__())
 
     def tearDown(self):
         self.toil.__exit__(None, None, None)
         self.toil._jobStore.destroy()
         self.assertFalse(os.path.exists(self.jobStorePath))
         super(JobGraphTest, self).tearDown()
-    
-    def testJob(self):       
+
+    def testJob(self):
         """
         Tests functions of a job.
-        """ 
-    
+        """
+
         command = "by your command"
-        memory = 2^32
-        disk = 2^32
+        memory = 2 ^ 32
+        disk = 2 ^ 32
         cores = 1
         preemptable = 1
         jobStoreID = 100
         remainingRetryCount = 5
         predecessorNumber = 0
-        
+
         j = JobGraph(command=command, memory=memory, cores=cores, disk=disk, preemptable=preemptable,
                      jobStoreID=jobStoreID, remainingRetryCount=remainingRetryCount,
                      predecessorNumber=predecessorNumber, jobName='testJobGraph', unitName='noName')
-        
-        #Check attributes
+
+        # Check attributes
         #
         self.assertEquals(j.command, command)
         self.assertEquals(j.memory, memory)
@@ -68,15 +68,15 @@ class JobGraphTest(ToilTest):
         self.assertEquals(j.stack, [])
         self.assertEquals(j.predecessorsFinished, set())
         self.assertEquals(j.logJobStoreFileID, None)
-        
-        #Check equals function
+
+        # Check equals function
         j2 = JobGraph(command=command, memory=memory, cores=cores, disk=disk,
                       preemptable=preemptable,
                       jobStoreID=jobStoreID, remainingRetryCount=remainingRetryCount,
                       predecessorNumber=predecessorNumber, jobName='testJobGraph', unitName='noName')
         self.assertEquals(j, j2)
-        #Change an attribute and check not equal
+        # Change an attribute and check not equal
         j.predecessorsFinished = {"1", "2"}
         self.assertNotEquals(j, j2)
-        
+
         ###TODO test other functionality

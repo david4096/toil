@@ -15,6 +15,7 @@
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import str
 from builtins import range
@@ -46,7 +47,6 @@ from toil.batchSystems.options import addOptions as addBatchOptions
 from toil.batchSystems.options import setDefaultOptions as setDefaultBatchOptions
 from toil.batchSystems.options import setOptions as setBatchOptions
 
-
 logger = logging.getLogger(__name__)
 
 # This constant is set to the default value used on unix for block size (in bytes) when
@@ -58,6 +58,7 @@ class Config(object):
     """
     Class to represent configuration operations for a toil workflow run.
     """
+
     def __init__(self):
         # Core options
         self.workflowID = None
@@ -77,13 +78,13 @@ class Config(object):
         self.cleanWorkDir = None
         self.clusterStats = None
 
-        #Restarting the workflow options
+        # Restarting the workflow options
         self.restart = False
 
-        #Batch system options
+        # Batch system options
         setDefaultBatchOptions(self)
 
-        #Autoscaling options
+        # Autoscaling options
         self.provisioner = None
         self.nodeTypes = []
         self.nodeOptions = None
@@ -94,14 +95,14 @@ class Config(object):
         self.scaleInterval = 30
         self.preemptableCompensation = 0.0
         self.nodeStorage = 50
-        
+
         # Parameters to limit service jobs, so preventing deadlock scheduling scenarios
         self.maxPreemptableServiceJobs = sys.maxsize
         self.maxServiceJobs = sys.maxsize
-        self.deadlockWait = 60 # Wait one minute before declaring a deadlock
-        self.statePollingWait = 1 # Wait 1 seconds before querying job state
+        self.deadlockWait = 60  # Wait one minute before declaring a deadlock
+        self.statePollingWait = 1  # Wait 1 seconds before querying job state
 
-        #Resource requirements
+        # Resource requirements
         self.defaultMemory = 2147483648
         self.defaultCores = 1
         self.defaultDisk = 2147483648
@@ -111,12 +112,12 @@ class Config(object):
         self.maxMemory = sys.maxsize
         self.maxDisk = sys.maxsize
 
-        #Retrying/rescuing jobs
+        # Retrying/rescuing jobs
         self.retryCount = 0
         self.maxJobDuration = sys.maxsize
         self.rescueJobsFrequency = 3600
 
-        #Misc
+        # Misc
         self.disableCaching = False
         self.maxLogFileSize = 64000
         self.writeLogs = None
@@ -126,7 +127,7 @@ class Config(object):
         self.servicePollingInterval = 60
         self.useAsync = True
 
-        #Debug options
+        # Debug options
         self.debugWorker = False
         self.badWorker = 0.0
         self.badWorkerFailInterval = 0.01
@@ -135,11 +136,11 @@ class Config(object):
         """
         Creates a config object from the options object.
         """
-        from bd2k.util.humanize import human2bytes #This import is used to convert
-        #from human readable quantites to integers
+        from bd2k.util.humanize import human2bytes  # This import is used to convert
+        # from human readable quantites to integers
         def setOption(varName, parsingFn=None, checkFn=None, default=None):
-            #If options object has the option "varName" specified
-            #then set the "varName" attrib to this value in the config object
+            # If options object has the option "varName" specified
+            # then set the "varName" attrib to this value in the config object
             x = getattr(options, varName, None)
             if x is None:
                 x = default
@@ -156,7 +157,7 @@ class Config(object):
                 setattr(self, varName, x)
 
         # Function to parse integer from string expressed in different formats
-        h2b = lambda x : human2bytes(str(x))
+        h2b = lambda x: human2bytes(str(x))
 
         def parseJobStore(s):
             name, rest = Toil.parseLocator(s)
@@ -166,18 +167,20 @@ class Config(object):
                 return Toil.buildLocator(name, os.path.abspath(rest))
             else:
                 return s
+
         def parseStrList(s):
             s = s.split(",")
             s = [str(x) for x in s]
             return s
+
         def parseIntList(s):
             s = s.split(",")
             s = [int(x) for x in s]
             return s
 
-        #Core options
+        # Core options
         setOption("jobStore", parsingFn=parseJobStore)
-        #TODO: LOG LEVEL STRING
+        # TODO: LOG LEVEL STRING
         setOption("workDir")
         if self.workDir is not None:
             self.workDir = os.path.abspath(self.workDir)
@@ -198,10 +201,10 @@ class Config(object):
             self.clean = "onSuccess"
         setOption('clusterStats')
 
-        #Restarting the workflow options
+        # Restarting the workflow options
         setOption("restart")
 
-        #Batch system options
+        # Batch system options
         setOption("batchSystem")
         setBatchOptions(self, setOption)
         setOption("disableHotDeployment")
@@ -213,7 +216,7 @@ class Config(object):
 
         setOption("environment", parseSetEnv)
 
-        #Autoscaling options
+        # Autoscaling options
         setOption("provisioner")
         setOption("nodeTypes", parseStrList)
         setOption("nodeOptions")
@@ -244,12 +247,12 @@ class Config(object):
         setOption("maxDisk", h2b, iC(1))
         setOption("defaultPreemptable")
 
-        #Retrying/rescuing jobs
+        # Retrying/rescuing jobs
         setOption("retryCount", int, iC(0))
         setOption("maxJobDuration", int, iC(1))
         setOption("rescueJobsFrequency", int, iC(1))
 
-        #Misc
+        # Misc
         setOption("disableCaching")
         setOption("maxLogFileSize", h2b, iC(1))
         setOption("writeLogs")
@@ -257,12 +260,13 @@ class Config(object):
 
         def checkSse(sseKey):
             with open(sseKey) as f:
-                assert(len(f.readline().rstrip()) == 32)
+                assert (len(f.readline().rstrip()) == 32)
+
         setOption("sseKey", checkFn=checkSse)
         setOption("cseKey", checkFn=checkSse)
         setOption("servicePollingInterval", float, fC(0.0))
 
-        #Debug options
+        # Debug options
         setOption("debugWorker")
         setOption("badWorker", float, fC(0.0, 1.0))
         setOption("badWorkerFailInterval", float, fC(0.0))
@@ -272,6 +276,7 @@ class Config(object):
 
     def __hash__(self):
         return self.__dict__.__hash__()
+
 
 jobStoreLocatorHelp = ("A job store holds persistent information about the jobs and files in a "
                        "workflow. If the workflow is run with a distributed batch system, the job "
@@ -287,9 +292,10 @@ jobStoreLocatorHelp = ("A job store holds persistent information about the jobs 
                        "For backwards compatibility, you may also specify ./foo (equivalent to "
                        "file:./foo or just file:foo) or /bar (equivalent to file:/bar).")
 
+
 def _addOptions(addGroupFn, config):
     #
-    #Core options
+    # Core options
     #
     addOptionFn = addGroupFn("toil core options",
                              "Options to specify the location of the Toil workflow and turn on "
@@ -325,7 +331,7 @@ def _addOptions(addGroupFn, config):
                      "should be written. This options only applies when using scalable batch "
                      "systems.")
     #
-    #Restarting the workflow options
+    # Restarting the workflow options
     #
     addOptionFn = addGroupFn("toil options for restarting an existing workflow",
                              "Allows the restart of an existing workflow")
@@ -335,7 +341,7 @@ def _addOptions(addGroupFn, config):
                      "if the workflow does not exist")
 
     #
-    #Batch system options
+    # Batch system options
     #
 
     addOptionFn = addGroupFn("toil options for specifying the batch system",
@@ -344,7 +350,7 @@ def _addOptions(addGroupFn, config):
     addBatchOptions(addOptionFn)
 
     #
-    #Auto scaling options
+    # Auto scaling options
     #
     addOptionFn = addGroupFn("toil options for autoscaling the cluster of worker nodes",
                              "Allows the specification of the minimum and maximum number of nodes "
@@ -356,33 +362,33 @@ def _addOptions(addGroupFn, config):
                      "'cgcloud' or 'aws'. The default is %s." % config.provisioner)
 
     addOptionFn('--nodeTypes', default=None,
-                 help="List of node types separated by commas. The syntax for each node type "
-                      "depends on the provisioner used. For the cgcloud and AWS provisioners "
-                      "this is the name of an EC2 instance type, optionally followed by a "
-                      "colon and the price in dollars "
-                      "to bid for a spot instance of that type, for example 'c3.8xlarge:0.42'."
-                      "If no spot bid is specified, nodes of this type will be non-preemptable."
-                      "It is acceptable to specify an instance as both preemptable and "
-                      "non-preemptable, including it twice in the list. In that case,"
-                      "preemptable nodes of that type will be preferred when creating "
-                      "new nodes once the maximum number of preemptable-nodes has been"
-                      "reached.")
+                help="List of node types separated by commas. The syntax for each node type "
+                     "depends on the provisioner used. For the cgcloud and AWS provisioners "
+                     "this is the name of an EC2 instance type, optionally followed by a "
+                     "colon and the price in dollars "
+                     "to bid for a spot instance of that type, for example 'c3.8xlarge:0.42'."
+                     "If no spot bid is specified, nodes of this type will be non-preemptable."
+                     "It is acceptable to specify an instance as both preemptable and "
+                     "non-preemptable, including it twice in the list. In that case,"
+                     "preemptable nodes of that type will be preferred when creating "
+                     "new nodes once the maximum number of preemptable-nodes has been"
+                     "reached.")
 
     addOptionFn('--nodeOptions', default=None,
-                 help="Options for provisioning the nodes. The syntax "
-                      "depends on the provisioner used. Neither the CGCloud nor the AWS "
-                      "provisioner support any node options.")
+                help="Options for provisioning the nodes. The syntax "
+                     "depends on the provisioner used. Neither the CGCloud nor the AWS "
+                     "provisioner support any node options.")
 
-    addOptionFn('--minNodes', default=None, 
-                 help="Mininum number of nodes of each type in the cluster, if using "
-                              "auto-scaling. This should be provided as a comma-separated "
-                              "list of the same length as the list of node types. default=0")
+    addOptionFn('--minNodes', default=None,
+                help="Mininum number of nodes of each type in the cluster, if using "
+                     "auto-scaling. This should be provided as a comma-separated "
+                     "list of the same length as the list of node types. default=0")
 
     addOptionFn('--maxNodes', default=None,
                 help="Maximum number of nodes of each type in the cluster, if using "
-                "autoscaling, provided as a comma-separated list. The first value is used "
-                "as a default if the list length is less than the number of nodeTypes. "
-                "default=%s" % config.maxNodes[0])
+                     "autoscaling, provided as a comma-separated list. The first value is used "
+                     "as a default if the list length is less than the number of nodeTypes. "
+                     "default=%s" % config.maxNodes[0])
 
     # TODO: DESCRIBE THE FOLLOWING TWO PARAMETERS
     addOptionFn("--alphaPacking", dest="alphaPacking", default=None,
@@ -411,7 +417,7 @@ def _addOptions(addGroupFn, config):
                 help=("Specify the size of the root volume of worker nodes when they are launched "
                       "in gigabytes. You may want to set this if your jobs require a lot of disk "
                       "space. The default value is 50."))
-    
+
     #        
     # Parameters to limit service jobs / detect service deadlocks
     #
@@ -420,17 +426,20 @@ def _addOptions(addGroupFn, config):
                              "in a cluster. By keeping this limited "
                              " we can avoid all the nodes being occupied with services, so causing a deadlock")
     addOptionFn("--maxServiceJobs", dest="maxServiceJobs", default=None,
-                help=("The maximum number of service jobs that can be run concurrently, excluding service jobs running on preemptable nodes. default=%s" % config.maxServiceJobs))
+                help=(
+                    "The maximum number of service jobs that can be run concurrently, excluding service jobs running on preemptable nodes. default=%s" % config.maxServiceJobs))
     addOptionFn("--maxPreemptableServiceJobs", dest="maxPreemptableServiceJobs", default=None,
-                help=("The maximum number of service jobs that can run concurrently on preemptable nodes. default=%s" % config.maxPreemptableServiceJobs))
+                help=(
+                    "The maximum number of service jobs that can run concurrently on preemptable nodes. default=%s" % config.maxPreemptableServiceJobs))
     addOptionFn("--deadlockWait", dest="deadlockWait", default=None,
-                help=("The minimum number of seconds to observe the cluster stuck running only the same service jobs before throwing a deadlock exception. default=%s" % config.deadlockWait))
+                help=(
+                    "The minimum number of seconds to observe the cluster stuck running only the same service jobs before throwing a deadlock exception. default=%s" % config.deadlockWait))
     addOptionFn("--statePollingWait", dest="statePollingWait", default=1,
                 help=("Time, in seconds, to wait before doing a scheduler query for job state. "
                       "Return cached results if within the waiting period."))
 
     #
-    #Resource requirements
+    # Resource requirements
     #
     addOptionFn = addGroupFn("toil options for cores/memory requirements",
                              "The options to specify default cores/memory requirements (if not "
@@ -440,7 +449,7 @@ def _addOptions(addGroupFn, config):
                 help='The default amount of memory to request for a job. Only applicable to jobs '
                      'that do not specify an explicit value for this requirement. Standard '
                      'suffixes like K, Ki, M, Mi, G or Gi are supported. Default is %s' %
-                     bytes2human( config.defaultMemory, symbols='iec' ))
+                     bytes2human(config.defaultMemory, symbols='iec'))
     addOptionFn('--defaultCores', dest='defaultCores', default=None, metavar='FLOAT',
                 help='The default number of CPU cores to dedicate a job. Only applicable to jobs '
                      'that do not specify an explicit value for this requirement. Fractions of a '
@@ -450,7 +459,7 @@ def _addOptions(addGroupFn, config):
                 help='The default amount of disk space to dedicate a job. Only applicable to jobs '
                      'that do not specify an explicit value for this requirement. Standard '
                      'suffixes like K, Ki, M, Mi, G or Gi are supported. Default is %s' %
-                     bytes2human( config.defaultDisk, symbols='iec' ))
+                     bytes2human(config.defaultDisk, symbols='iec'))
     assert not config.defaultPreemptable, 'User would be unable to reset config.defaultPreemptable'
     addOptionFn('--defaultPreemptable', dest='defaultPreemptable', action='store_true')
     addOptionFn("--readGlobalFileMutableByDefault", dest="readGlobalFileMutableByDefault",
@@ -466,32 +475,32 @@ def _addOptions(addGroupFn, config):
     addOptionFn('--maxMemory', dest='maxMemory', default=None, metavar='INT',
                 help="The maximum amount of memory to request from the batch system at any one "
                      "time. Standard suffixes like K, Ki, M, Mi, G or Gi are supported. Default "
-                     "is %s" % bytes2human( config.maxMemory, symbols='iec'))
+                     "is %s" % bytes2human(config.maxMemory, symbols='iec'))
     addOptionFn('--maxDisk', dest='maxDisk', default=None, metavar='INT',
                 help='The maximum amount of disk space to request from the batch system at any '
                      'one time. Standard suffixes like K, Ki, M, Mi, G or Gi are supported. '
                      'Default is %s' % bytes2human(config.maxDisk, symbols='iec'))
 
     #
-    #Retrying/rescuing jobs
+    # Retrying/rescuing jobs
     #
     addOptionFn = addGroupFn("toil options for rescuing/killing/restarting jobs", \
-            "The options for jobs that either run too long/fail or get lost \
+                             "The options for jobs that either run too long/fail or get lost \
             (some batch systems have issues!)")
     addOptionFn("--retryCount", dest="retryCount", default=None,
-                      help=("Number of times to retry a failing job before giving up and "
-                            "labeling job failed. default=%s" % config.retryCount))
+                help=("Number of times to retry a failing job before giving up and "
+                      "labeling job failed. default=%s" % config.retryCount))
     addOptionFn("--maxJobDuration", dest="maxJobDuration", default=None,
-                      help=("Maximum runtime of a job (in seconds) before we kill it "
-                            "(this is a lower bound, and the actual time before killing "
-                            "the job may be longer). default=%s" % config.maxJobDuration))
+                help=("Maximum runtime of a job (in seconds) before we kill it "
+                      "(this is a lower bound, and the actual time before killing "
+                      "the job may be longer). default=%s" % config.maxJobDuration))
     addOptionFn("--rescueJobsFrequency", dest="rescueJobsFrequency", default=None,
-                      help=("Period of time to wait (in seconds) between checking for "
-                            "missing/overlong jobs, that is jobs which get lost by the batch "
-                            "system. Expert parameter. default=%s" % config.rescueJobsFrequency))
+                help=("Period of time to wait (in seconds) between checking for "
+                      "missing/overlong jobs, that is jobs which get lost by the batch "
+                      "system. Expert parameter. default=%s" % config.rescueJobsFrequency))
 
     #
-    #Misc options
+    # Misc options
     #
     addOptionFn = addGroupFn("toil miscellaneous options", "Miscellaneous options")
     addOptionFn('--disableCaching', dest='disableCaching', action='store_true', default=False,
@@ -519,11 +528,11 @@ def _addOptions(addGroupFn, config):
                 help="Enable real-time logging from workers to masters")
 
     addOptionFn("--sseKey", dest="sseKey", default=None,
-            help="Path to file containing 32 character key to be used for server-side encryption on awsJobStore. SSE will "
-                 "not be used if this flag is not passed.")
+                help="Path to file containing 32 character key to be used for server-side encryption on awsJobStore. SSE will "
+                     "not be used if this flag is not passed.")
     addOptionFn("--cseKey", dest="cseKey", default=None,
                 help="Path to file containing 256-bit key to be used for client-side encryption on "
-                "azureJobStore. By default, no encryption is used.")
+                     "azureJobStore. By default, no encryption is used.")
     addOptionFn("--setEnv", '-e', metavar='NAME=VALUE or NAME',
                 dest="environment", default=[], action="append",
                 help="Set an environment variable early on in the worker. If VALUE is omitted, "
@@ -533,20 +542,22 @@ def _addOptions(addGroupFn, config):
                      "worker process itself before it is started.")
     addOptionFn("--servicePollingInterval", dest="servicePollingInterval", default=None,
                 help="Interval of time service jobs wait between polling for the existence"
-                " of the keep-alive flag (defailt=%s)" % config.servicePollingInterval)
+                     " of the keep-alive flag (defailt=%s)" % config.servicePollingInterval)
     #
-    #Debug options
+    # Debug options
     #
     addOptionFn = addGroupFn("toil debug options", "Debug options")
     addOptionFn("--debug-worker", default=False, action="store_true",
-            help="Experimental no forking mode for local debugging."
-                 " Specifically, workers are not forked and"
-                 " stderr/stdout are not redirected to the log.")
+                help="Experimental no forking mode for local debugging."
+                     " Specifically, workers are not forked and"
+                     " stderr/stdout are not redirected to the log.")
     addOptionFn("--badWorker", dest="badWorker", default=None,
-                      help=("For testing purposes randomly kill 'badWorker' proportion of jobs using SIGKILL, default=%s" % config.badWorker))
+                help=(
+                    "For testing purposes randomly kill 'badWorker' proportion of jobs using SIGKILL, default=%s" % config.badWorker))
     addOptionFn("--badWorkerFailInterval", dest="badWorkerFailInterval", default=None,
-                      help=("When killing the job pick uniformly within the interval from 0.0 to "
-                            "'badWorkerFailInterval' seconds after the worker starts, default=%s" % config.badWorkerFailInterval))
+                help=("When killing the job pick uniformly within the interval from 0.0 to "
+                      "'badWorkerFailInterval' seconds after the worker starts, default=%s" % config.badWorkerFailInterval))
+
 
 def addOptions(parser, config=Config()):
     """
@@ -554,14 +565,16 @@ def addOptions(parser, config=Config()):
     """
     # Wrapper function that allows toil to be used with both the optparse and
     # argparse option parsing modules
-    addLoggingOptions(parser) # This adds the logging stuff.
+    addLoggingOptions(parser)  # This adds the logging stuff.
     if isinstance(parser, ArgumentParser):
         def addGroup(headingString, bodyString):
             return parser.add_argument_group(headingString, bodyString).add_argument
+
         _addOptions(addGroup, config)
     else:
         raise RuntimeError("Unanticipated class passed to addOptions(), %s. Expecting "
                            "argparse.ArgumentParser" % parser.__class__)
+
 
 def getNodeID(extraIDFiles=None):
     """
@@ -586,15 +599,15 @@ def getNodeID(extraIDFiles=None):
                 with open(idSourceFile, "r") as inp:
                     nodeID = inp.readline().strip()
             except EnvironmentError:
-                logger.warning(("Exception when trying to read ID file {}. Will try next method to get node ID").\
-                        format(idSourceFile), exc_info=True)
+                logger.warning(("Exception when trying to read ID file {}. Will try next method to get node ID"). \
+                               format(idSourceFile), exc_info=True)
             else:
                 if len(nodeID.split()) == 1:
-                    logger.debug("Obtained node ID {} from file {}".format(nodeID,idSourceFile))
+                    logger.debug("Obtained node ID {} from file {}".format(nodeID, idSourceFile))
                     break
                 else:
-                    logger.warning(("Node ID {} from file {} contains spaces. Will try next method to get node ID").\
-                            format(nodeID, idSourceFile))
+                    logger.warning(("Node ID {} from file {} contains spaces. Will try next method to get node ID"). \
+                                   format(nodeID, idSourceFile))
     else:
         nodeIDs = []
         for i_call in range(2):
@@ -608,15 +621,16 @@ def getNodeID(extraIDFiles=None):
             if nodeIDs[0] == nodeIDs[1]:
                 nodeID = nodeIDs[0]
             else:
-                logger.warning("Different node IDs {} received from repeated calls to uuid.getnode(). You should use "\
-                        "another method to generate node ID.".format(nodeIDs))
+                logger.warning("Different node IDs {} received from repeated calls to uuid.getnode(). You should use " \
+                               "another method to generate node ID.".format(nodeIDs))
 
             logger.debug("Obtained node ID {} from uuid.getnode()".format(nodeID))
     if not nodeID:
-        logger.warning("Failed to generate stable node ID, returning empty string. If you see this message with a "\
-                "work dir on a shared file system when using workers running on multiple nodes, you might experience "\
-                "cryptic job failures")
+        logger.warning("Failed to generate stable node ID, returning empty string. If you see this message with a " \
+                       "work dir on a shared file system when using workers running on multiple nodes, you might experience " \
+                       "cryptic job failures")
     return nodeID
+
 
 class Toil(object):
     """
@@ -1026,6 +1040,7 @@ class Toil(object):
         if not self._inContextManager:
             raise ToilContextManagerException()
 
+
 class ToilRestartException(Exception):
     def __init__(self, message):
         super(ToilRestartException, self).__init__(message)
@@ -1035,6 +1050,7 @@ class ToilContextManagerException(Exception):
     def __init__(self):
         super(ToilContextManagerException, self).__init__(
             'This method cannot be called outside the "with Toil(...)" context manager.')
+
 
 # Nested functions can't have doctests so we have to make this global
 
@@ -1086,6 +1102,7 @@ def iC(minValue, maxValue=sys.maxsize):
     # Returns function that checks if a given int is in the given half-open interval
     assert isinstance(minValue, int) and isinstance(maxValue, int)
     return lambda x: minValue <= x < maxValue
+
 
 def fC(minValue, maxValue=None):
     # Returns function that checks if a given float is in the given half-open interval

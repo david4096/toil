@@ -400,7 +400,7 @@ class MesosBatchSystem(BatchSystemSupport,
         for offer in offers:
             if offer.hostname in self.ignoredNodes:
                 log.debug("Declining offer %s because node %s is designated for termination" %
-                        (offer.id.value, offer.hostname))
+                          (offer.id.value, offer.hostname))
                 driver.declineOffer(offer.id)
                 continue
             runnableTasks = []
@@ -420,7 +420,7 @@ class MesosBatchSystem(BatchSystemSupport,
                 # loop.
                 nextToLaunchIndex = 0
                 # Toil specifies disk and memory in bytes but Mesos uses MiB
-                while ( not self.jobQueues.typeEmpty(jobType)
+                while (not self.jobQueues.typeEmpty(jobType)
                        # On a non-preemptable node we can run any job, on a preemptable node we
                        # can only run preemptable jobs:
                        and (not offerPreemptable or jobType.preemptable)
@@ -462,9 +462,9 @@ class MesosBatchSystem(BatchSystemSupport,
         if unableToRun and time.time() > (self.lastTimeOfferLogged + self.logPeriod):
             self.lastTimeOfferLogged = time.time()
             log.debug('Although there are queued jobs, none of them were able to run in '
-                     'any of the offers extended to the framework. There are currently '
-                     '%i jobs running. Enable debug level logging to see more details about '
-                     'job types and offers received.', len(self.runningJobMap))
+                      'any of the offers extended to the framework. There are currently '
+                      '%i jobs running. Enable debug level logging to see more details about '
+                      'job types and offers received.', len(self.runningJobMap))
 
     def _trackOfferedNodes(self, offers):
         for offer in offers:
@@ -635,11 +635,10 @@ class MesosBatchSystem(BatchSystemSupport,
         """
         log.warning("Executor '%s' lost.", executorId)
 
-
     @classmethod
     def setOptions(cl, setOption):
         setOption("mesosMasterAddress", None, None, 'localhost:5050')
-        
+
 
 def toMiB(n):
     return n / 1024 / 1024

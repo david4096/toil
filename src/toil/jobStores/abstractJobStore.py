@@ -14,6 +14,7 @@
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import str
 from builtins import map
@@ -60,6 +61,7 @@ class InvalidImportExportUrlException(Exception):
 
 class NoSuchJobException(Exception):
     """Indicates that the specified job does not exist."""
+
     def __init__(self, jobStoreID):
         """
         :param str jobStoreID: the jobStoreID that was mistakenly assumed to exist
@@ -69,6 +71,7 @@ class NoSuchJobException(Exception):
 
 class ConcurrentFileModificationException(Exception):
     """Indicates that the file was attempted to be modified by multiple processes at once."""
+
     def __init__(self, jobStoreFileID):
         """
         :param str jobStoreFileID: the ID of the file that was modified by multiple workers
@@ -80,6 +83,7 @@ class ConcurrentFileModificationException(Exception):
 
 class NoSuchFileException(Exception):
     """Indicates that the specified file does not exist."""
+
     def __init__(self, jobStoreFileID, customName=None):
         """
         :param str jobStoreFileID: the ID of the file that was mistakenly assumed to exist
@@ -94,6 +98,7 @@ class NoSuchFileException(Exception):
 
 class NoSuchJobStoreException(Exception):
     """Indicates that the specified job store does not exist."""
+
     def __init__(self, locator):
         super(NoSuchJobStoreException, self).__init__(
             "The job store '%s' does not exist, so there is nothing to restart" % locator)
@@ -101,6 +106,7 @@ class NoSuchJobStoreException(Exception):
 
 class JobStoreExistsException(Exception):
     """Indicates that the specified job store already exists."""
+
     def __init__(self, locator):
         super(JobStoreExistsException, self).__init__(
             "The job store '%s' already exists. Use --restart to resume the workflow, or remove "
@@ -484,8 +490,7 @@ class AbstractJobStore(with_metaclass(ABCMeta, object)):
             # Traverse jobs in stack
             for jobs in jobGraph.stack:
                 for successorJobStoreID in [x.jobStoreID for x in jobs]:
-                    if (successorJobStoreID not in reachableFromRoot
-                        and haveJob(successorJobStoreID)):
+                    if (successorJobStoreID not in reachableFromRoot and haveJob(successorJobStoreID)):
                         getConnectedJobs(getJob(successorJobStoreID))
             # Traverse service jobs
             for jobs in jobGraph.services:
@@ -598,9 +603,12 @@ class AbstractJobStore(with_metaclass(ABCMeta, object)):
             startServicesSize = servicesSizeFn()
 
             def replaceFlagsIfNeeded(serviceJobNode):
-                serviceJobNode.startJobStoreID = subFlagFile(serviceJobNode.jobStoreID, serviceJobNode.startJobStoreID, 1)
-                serviceJobNode.terminateJobStoreID = subFlagFile(serviceJobNode.jobStoreID, serviceJobNode.terminateJobStoreID, 2)
-                serviceJobNode.errorJobStoreID = subFlagFile(serviceJobNode.jobStoreID, serviceJobNode.errorJobStoreID, 3)
+                serviceJobNode.startJobStoreID = subFlagFile(serviceJobNode.jobStoreID, serviceJobNode.startJobStoreID,
+                                                             1)
+                serviceJobNode.terminateJobStoreID = subFlagFile(serviceJobNode.jobStoreID,
+                                                                 serviceJobNode.terminateJobStoreID, 2)
+                serviceJobNode.errorJobStoreID = subFlagFile(serviceJobNode.jobStoreID, serviceJobNode.errorJobStoreID,
+                                                             3)
 
             # jobGraph.services is a list of lists containing serviceNodes
             # remove all services that no longer exist
@@ -634,12 +642,14 @@ class AbstractJobStore(with_metaclass(ABCMeta, object)):
 
         # Remove any crufty stats/logging files from the previous run
         logger.info("Discarding old statistics and logs...")
+
         # We have to manually discard the stream to avoid getting
         # stuck on a blocking write from the job store.
         def discardStream(stream):
             """Read the stream 4K at a time until EOF, discarding all input."""
             while len(stream.read(4096)) != 0:
                 pass
+
         self.readStatsAndLogging(discardStream)
 
         logger.info("Job store is clean")

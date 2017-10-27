@@ -25,11 +25,13 @@ import tempfile
 # Python 3 compatibility imports
 from six.moves import xrange
 
+
 class MiscTests(ToilTest):
     """
     This class contains miscellaneous tests that don't have enough content to be their own test
     file, and that don't logically fit in with any of the other test suites.
     """
+
     def setUp(self):
         super(MiscTests, self).setUp()
         self.testDir = self._createTempDir()
@@ -60,14 +62,14 @@ class MiscTests(ToilTest):
         # A dict of {FILENAME: FILESIZE} for all files used in the test
         files = {}
         # Create a random directory structure
-        for i in range(0,10):
+        for i in range(0, 10):
             directories.append(tempfile.mkdtemp(dir=random.choice(directories), prefix='test'))
         # Create 50 random file entries in different locations in the directories. 75% of the time
         # these are fresh files of sixe [1, 10] MB and 25% of the time they are hard links to old
         # files.
         while len(files) <= 50:
             fileName = os.path.join(random.choice(directories), self._getRandomName())
-            if random.randint(0,100) < 75:
+            if random.randint(0, 100) < 75:
                 # Create a fresh file in the range of 1-10 MB
                 fileSize = int(round(random.random(), 2) * 10 * 1024 * 1024)
                 with open(fileName, 'w') as fileHandle:
@@ -88,4 +90,3 @@ class MiscTests(ToilTest):
     @staticmethod
     def _getRandomName():
         return uuid4().hex
-

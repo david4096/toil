@@ -43,7 +43,7 @@ from toil.jobStores.abstractJobStore import (AbstractJobStore,
                                              NoSuchJobStoreException)
 from toil.jobGraph import JobGraph
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
 
 
 class FileJobStore(AbstractJobStore):
@@ -82,7 +82,7 @@ class FileJobStore(AbstractJobStore):
     def resume(self):
         if not os.path.exists(self.jobStoreDir):
             raise NoSuchJobStoreException(self.jobStoreDir)
-        require( os.path.isdir, "'%s' is not a directory", self.jobStoreDir)
+        require(os.path.isdir, "'%s' is not a directory", self.jobStoreDir)
         super(FileJobStore, self).resume()
 
     def destroy(self):
@@ -168,7 +168,7 @@ class FileJobStore(AbstractJobStore):
         # Walk through list of temporary directories searching for jobs
         for tempDir in self._tempDirectories():
             for i in os.listdir(tempDir):
-                if i.startswith( 'job' ):
+                if i.startswith('job'):
                     try:
                         yield self.load(self._getRelativePath(os.path.join(tempDir, i)))
                     except NoSuchJobException:
@@ -327,19 +327,19 @@ class FileJobStore(AbstractJobStore):
     @contextmanager
     def writeSharedFileStream(self, sharedFileName, isProtected=None):
         # the isProtected parameter has no effect on the fileStore
-        assert self._validateSharedFileName( sharedFileName )
+        assert self._validateSharedFileName(sharedFileName)
         with open(self._getSharedFilePath(sharedFileName), 'w') as f:
             yield f
 
     @contextmanager
     def readSharedFileStream(self, sharedFileName):
-        assert self._validateSharedFileName( sharedFileName )
+        assert self._validateSharedFileName(sharedFileName)
         try:
             with open(os.path.join(self.jobStoreDir, sharedFileName), 'r') as f:
                 yield f
         except IOError as e:
             if e.errno == errno.ENOENT:
-                raise NoSuchFileException(sharedFileName,sharedFileName)
+                raise NoSuchFileException(sharedFileName, sharedFileName)
             else:
                 raise
 
@@ -386,7 +386,7 @@ class FileJobStore(AbstractJobStore):
         self.tempFilesDir
 
         """
-        return absPath[len(self.tempFilesDir)+1:]
+        return absPath[len(self.tempFilesDir) + 1:]
 
     def _getJobFileName(self, jobStoreID):
         """
@@ -425,7 +425,7 @@ class FileJobStore(AbstractJobStore):
                 try:
                     os.mkdir(tempDir)
                 except os.error:
-                    if not os.path.exists(tempDir): # In the case that a collision occurs and
+                    if not os.path.exists(tempDir):  # In the case that a collision occurs and
                         # it is created while we wait then we ignore
                         raise
         return tempDir
@@ -435,13 +435,15 @@ class FileJobStore(AbstractJobStore):
         :rtype : an iterator to the temporary directories containing jobs/stats files
         in the hierarchy of directories in self.tempFilesDir
         """
+
         def _dirs(path, levels):
             if levels > 0:
                 for subPath in os.listdir(path):
-                    for i in _dirs(os.path.join(path, subPath), levels-1):
+                    for i in _dirs(os.path.join(path, subPath), levels - 1):
                         yield i
             else:
                 yield path
+
         for tempDir in _dirs(self.tempFilesDir, self.levels):
             yield tempDir
 
@@ -456,7 +458,7 @@ class FileJobStore(AbstractJobStore):
             # Make a temporary file within the job's directory
             self._checkJobStoreId(jobStoreID)
             return tempfile.mkstemp(suffix=".tmp",
-                                dir=os.path.join(self._getAbsPath(jobStoreID), "g"))
+                                    dir=os.path.join(self._getAbsPath(jobStoreID), "g"))
         else:
             # Make a temporary file within the temporary file structure
             return tempfile.mkstemp(prefix="tmp", suffix=".tmp", dir=self._getTempSharedDir())

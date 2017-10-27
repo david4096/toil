@@ -26,10 +26,10 @@ from threading import Thread, Event
 from bd2k.util.expando import Expando
 from toil.lib.bioio import getTotalCpuTime
 
-logger = logging.getLogger( __name__ )
+logger = logging.getLogger(__name__)
 
 
-class StatsAndLogging( object ):
+class StatsAndLogging(object):
     """
     Class manages a thread that aggregates statistics and logging information on a toil run.
     """

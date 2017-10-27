@@ -145,7 +145,7 @@ class ParasolBatchSystem(BatchSystemSupport):
         # meams the new job can't ever decrease the memory requirements
         # of jobs already in the batch.
         if len(self.resultsFiles) >= self.maxBatches:
-            raise RuntimeError( 'Number of batches reached limit of %i' % self.maxBatches)
+            raise RuntimeError('Number of batches reached limit of %i' % self.maxBatches)
         try:
             results = self.resultsFiles[(truncatedMemory, jobNode.cores)]
         except KeyError:
@@ -213,8 +213,8 @@ class ParasolBatchSystem(BatchSystemSupport):
             runningJobs = self.getIssuedBatchJobIDs()
             if set(jobIDs).difference(set(runningJobs)) == set(jobIDs):
                 break
-            logger.warn( 'Tried to kill some jobs, but something happened and they are still '
-                         'going, will try againin 5s.')
+            logger.warn('Tried to kill some jobs, but something happened and they are still '
+                        'going, will try againin 5s.')
             time.sleep(5)
         # Update the CPU usage, because killed jobs aren't written to the results file.
         for jobID in jobIDs:
@@ -346,7 +346,7 @@ class ParasolBatchSystem(BatchSystemSupport):
                             # second.
                             usrTicks = int(usrTicks)
                             sysTicks = int(sysTicks)
-                            wallTime = float( max( 1, usrTicks + sysTicks) ) * 0.01
+                            wallTime = float(max(1, usrTicks + sysTicks)) * 0.01
                         else:
                             wallTime = float(endTime - startTime)
                         self.updatedJobsQueue.put((jobId, status, wallTime))
@@ -377,10 +377,8 @@ class ParasolBatchSystem(BatchSystemSupport):
             os.remove(results)
         os.rmdir(self.parasolResultsDir)
 
-
     @classmethod
     def setOptions(cls, setOption):
         from toil.common import iC
         setOption("parasolCommand", None, None, 'parasol')
         setOption("parasolMaxBatches", int, iC(1), 10000)
-        

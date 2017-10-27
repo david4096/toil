@@ -16,6 +16,7 @@
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import object
 import os
@@ -35,7 +36,6 @@ from future.utils import with_metaclass
 
 logger = logging.getLogger(__name__)
 
-
 # A class containing the information required for worker cleanup on shutdown of the batch system.
 WorkerCleanupInfo = namedtuple('WorkerCleanupInfo', (
     # A path to the value of config.workDir (where the cache would go)
@@ -44,6 +44,7 @@ WorkerCleanupInfo = namedtuple('WorkerCleanupInfo', (
     'workflowID',
     # The value of the cleanWorkDir flag
     'cleanWorkDir'))
+
 
 class AbstractBatchSystem(with_metaclass(ABCMeta, object)):
     """
@@ -184,7 +185,6 @@ class AbstractBatchSystem(with_metaclass(ABCMeta, object)):
         """
         raise NotImplementedError()
 
-
     @classmethod
     def setOptions(cls, setOption):
         """
@@ -195,8 +195,8 @@ class AbstractBatchSystem(with_metaclass(ABCMeta, object)):
            used to update run configuration
         """
         pass
-        
-    
+
+
 class BatchSystemSupport(AbstractBatchSystem):
     """
     Partial implementation of AbstractBatchSystem, support methods.
@@ -254,7 +254,6 @@ class BatchSystemSupport(AbstractBatchSystem):
             raise InsufficientSystemResources('memory', memory, self.maxMemory)
         if disk > self.maxDisk:
             raise InsufficientSystemResources('disk', disk, self.maxDisk)
-
 
     def setEnv(self, name, value=None):
         """
@@ -324,6 +323,7 @@ class BatchSystemSupport(AbstractBatchSystem):
             and workflowDirContents in ([], [cacheDirName(info.workflowID)])):
             shutil.rmtree(workflowDir)
 
+
 class NodeInfo(object):
     """
     The coresUsed attribute  is a floating point value between 0 (all cores idle) and 1 (all cores
@@ -340,6 +340,7 @@ class NodeInfo(object):
     The workers attribute is an integer reflecting the number of workers currently active workers
     on the node.
     """
+
     def __init__(self, coresUsed, memoryUsed, coresTotal, memoryTotal,
                  requestedCores, requestedMemory, workers):
         self.coresUsed = coresUsed
@@ -428,11 +429,13 @@ class AbstractScalableBatchSystem(AbstractBatchSystem):
         """
         raise NotImplementedError()
 
+
 class InsufficientSystemResources(Exception):
     """
     To be raised when a job requests more of a particular resource than is either currently allowed
     or avaliable
     """
+
     def __init__(self, resource, requested, available):
         """
         Creates an instance of this exception that indicates which resource is insufficient for current

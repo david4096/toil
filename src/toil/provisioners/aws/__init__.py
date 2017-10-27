@@ -167,7 +167,8 @@ def _check_spot_bid(spot_bid, spot_history):
     average = mean([datum.price for datum in spot_history])
     if spot_bid > average * 2:
         logger.warn("Your bid $ %f is more than double this instance type's average "
-                 "spot price ($ %f) over the last week", spot_bid, average)
+                    "spot price ($ %f) over the last week", spot_bid, average)
+
 
 def _get_spot_history(ctx, instance_type):
     """
@@ -184,6 +185,7 @@ def _get_spot_history(ctx, instance_type):
     spot_data.sort(key=attrgetter("timestamp"), reverse=True)
     return spot_data
 
+
 ec2FullPolicy = dict(Version="2012-10-17", Statement=[
     dict(Effect="Allow", Resource="*", Action="ec2:*")])
 
@@ -195,7 +197,6 @@ sdbFullPolicy = dict(Version="2012-10-17", Statement=[
 
 iamFullPolicy = dict(Version="2012-10-17", Statement=[
     dict(Effect="Allow", Resource="*", Action="iam:*")])
-
 
 logDir = '--log_dir=/var/lib/mesos'
 leaderArgs = logDir + ' --registry=in_memory --cluster={name}'

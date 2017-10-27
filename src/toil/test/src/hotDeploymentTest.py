@@ -461,7 +461,7 @@ class HotDeploymentTest(ApplianceTestSupport):
                             try:
                                 toil.start(Job.wrapJobFn(root))
                             except FailedJobsException as e:
-                                assert e.numberOfFailedJobs == 2 # `root` and `deferring`
+                                assert e.numberOfFailedJobs == 2  # `root` and `deferring`
                                 assert not os.path.exists(deferredFilePath), \
                                     'Apparently, the deferred function did not run.'
                             else:
